@@ -1,2 +1,2 @@
 
-worker: python tgbot.py
+worker: python3 tgbot.py
