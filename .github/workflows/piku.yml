@@ -12,7 +12,10 @@ jobs:
     name: ${{ github.workflow }}
     runs-on: self-hosted
     steps:
-      - uses: actions/checkout@v2
+      - name: Print the input name to STDOUT
+        run: echo The username is ${{ inputs.username }}
+
+      - uses: actions/checkout@v3
 
       - name: Prerequisites
         run: git remote add piku piku@${{ env.HOST_NAME }}:${{ env.APPLICATION_NAME }}
