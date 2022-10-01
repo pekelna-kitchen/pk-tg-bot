@@ -16,6 +16,7 @@ jobs:
 
       - name: Prerequisites (git remote)
         run: |
+          echo USER=${USER}
           if git ls-remote --exit-code piku; then
             git remote add piku piku@${{ env.HOST_NAME }}:${{ env.APPLICATION_NAME }}``
           else
