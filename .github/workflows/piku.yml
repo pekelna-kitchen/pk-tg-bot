@@ -24,4 +24,4 @@ jobs:
           fi
 
       - name: Deploy
-        run: sudo git push piku master
+        run: git push piku
