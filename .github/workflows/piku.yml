@@ -18,8 +18,10 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: |
           echo USER=${USER}
+          piku
           git remote add piku piku@${{ env.HOST_NAME }}:${{ env.APPLICATION_NAME }} ||
-          git remote set-url piku piku@${{ env.HOST_NAME }}:${{ env.APPLICATION_NAME }}
+          git remote set-url piku piku@${{ env.HOST_NAME }}:${{ env.APPLICATION_NAME }} && 
+          echo Updated piku: piku@${{ env.HOST_NAME }}:${{ env.APPLICATION_NAME }}
 
       - name: Deploy
         working-directory: ${{ github.workspace }}
