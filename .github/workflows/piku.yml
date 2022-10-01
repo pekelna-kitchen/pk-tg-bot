@@ -24,4 +24,4 @@ jobs:
           fi
 
       - name: Deploy
-        run: git push piku
+        run: piku deploy
