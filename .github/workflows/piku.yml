@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Prerequisites
-        run: git remote set piku piku@${{ env.HOST_NAME }}:${{ env.APPLICATION_NAME }}
+        run: git remote add piku piku@${{ env.HOST_NAME }}:${{ env.APPLICATION_NAME }}
 
       - name: Deploy
         run: git push piku
