@@ -24,4 +24,5 @@ jobs:
           fi
 
       - name: Deploy
+        working-directory: ${{ github.workspace }}
         run: piku deploy
