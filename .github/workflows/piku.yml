@@ -17,8 +17,13 @@ jobs:
 
       - uses: actions/checkout@v3
 
-      - name: Prerequisites
-        run: git remote add piku piku@${{ env.HOST_NAME }}:${{ env.APPLICATION_NAME }}
+      - name: Prerequisites (git remote)
+        run: 
+          if git ls-remote --exit-code piku; then
+            git remote add piku piku@${{ env.HOST_NAME }}:${{ env.APPLICATION_NAME }}``
+          else
+            git remote set-url piku piku@${{ env.HOST_NAME }}:${{ env.APPLICATION_NAME }}``
+          fi
 
       - name: Deploy
         run: git push piku
