@@ -1,0 +1,21 @@
+
+name: psdpp
+on: [ push, workflow_dispatch ]
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  APPLICATION_NAME: hktg
+  HOST_NAME: raspberrypi
+
+jobs:
+  build:
+    name: ${{ github.workflow }}
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Prerequisites
+        run: git remote set-url piku piku@${{ env.HOST_NAME }}:${{ env.APPLICATION_NAME }}
+
+      - name: Deploy
+        run: git push piku
