@@ -12,9 +12,6 @@ jobs:
     name: ${{ github.workflow }}
     runs-on: self-hosted
     steps:
-      - name: Print the input name to STDOUT
-        run: echo The username is ${USER}
-
       - uses: actions/checkout@v3
 
       - name: Prerequisites (git remote)
