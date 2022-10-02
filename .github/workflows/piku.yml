@@ -29,6 +29,5 @@ jobs:
           echo Updated piku: piku@${{ env.HOST_NAME }}:${{ env.APPLICATION_NAME }}
 
       - name: Deploy
-        if: ${{ env.GITHUB_REF##*/ == 'master' }}
         working-directory: ${{ github.workspace }}
         run: piku deploy
