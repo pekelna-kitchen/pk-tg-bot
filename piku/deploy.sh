@@ -15,7 +15,7 @@ if [ "$branch_name" != "master" ]; then
 fi
 
 piku_address="piku@${HOST_NAME}:${app_name}"
-echo Updating piku: ${piku_address}
+echo ${USER} updating piku: ${piku_address}
 git remote add piku ${piku_address} || git remote set-url piku ${piku_address}
 
 piku deploy
