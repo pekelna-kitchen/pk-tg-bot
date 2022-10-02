@@ -38,10 +38,19 @@ class Home:
 
         keyboard = InlineKeyboardMarkup([buttons])
 
+        import git
+        repo = git.Repo(search_parent_directories=True)
+        sha = repo.description
+
+        import humanize
+        text = SHOWING_TEXT + "\n\nVersion: %s %s" % (
+            repo.active_branch.name, 
+            humanize.naturaltime(repo.commit().committed_datetime.replace(tzinfo=None)),
+        )
         if update.callback_query:
-            await update.callback_query.edit_message_text(text=SHOWING_TEXT, reply_markup=keyboard)
+            await update.callback_query.edit_message_text(text=text, reply_markup=keyboard)
         else:
-            await update.message.reply_text(text=SHOWING_TEXT, reply_markup=keyboard)
+            await update.message.reply_text(text=text, reply_markup=keyboard)
 
         return State.CHOOSING_ACTION
 
@@ -68,8 +77,8 @@ class Home:
         util.reset_data(context)
 
         if update.callback_query:
-            await update.callback_query.edit_message_text(text=SHOWING_TEXT, reply_markup=keyboard)
+            await update.callback_query.edit_message_text(text=COMEBACK_TEXT, reply_markup=ReplyKeyboardRemove())
         else:
-            await update.message.reply_text(text=COMEBACK_TEXT, reply_markup=ReplyKeyboardRemove())
+            await update.effective_chat.send_message(text=COMEBACK_TEXT, reply_markup=ReplyKeyboardRemove())
 
         return ConversationHandler.END

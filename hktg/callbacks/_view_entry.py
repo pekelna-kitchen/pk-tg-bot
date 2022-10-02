@@ -22,12 +22,12 @@ class ViewEntry:
 
         query_data = update.callback_query.data
 
-        id = product_id = amount = date = editor = instance = None
+        id = product_id = amount = change_date = editor = instance = None
         product_name = location_name = container = None
 
         if UserDataKey.CURRENT_ID in query_data:
             instance = util.find_in_table(dbwrapper.Tables.INSTANCE, 0, query_data[UserDataKey.CURRENT_ID])
-            (id, product_id, location_id, amount, container_id, date, editor) = instance
+            (id, product_id, location_id, amount, container_id, change_date, editor) = instance
 
             product_name = util.find_in_table(dbwrapper.Tables.PRODUCT, 0, product_id)[1]
             location_name = util.find_in_table(dbwrapper.Tables.LOCATION, 0, location_id)[1]
@@ -71,7 +71,7 @@ class ViewEntry:
         ])
         keyboard = InlineKeyboardMarkup(buttons)
 
-        editor_tuple = (editor, humanize.naturalday(date)) if editor else ('ніхто', 'ніколи')
+        editor_tuple = (editor, humanize.naturaltime(change_date.replace(tzinfo=None))) if editor else ('ніхто', 'ніколи')
 
         if update.callback_query:
             await update.callback_query.edit_message_text(text=ENTRY_MESSAGE % editor_tuple, reply_markup=keyboard)
