@@ -1,6 +1,9 @@
 
 from telegram import Update
-from telegram.ext import ContextTypes
+from telegram.ext import (
+    ContextTypes,
+    ConversationHandler
+)
 
 from hktg.constants import (
     Action,
@@ -31,7 +34,7 @@ class Home:
             buttons.append(util.action_button(Action.CREATE, {}))
 
         buttons.append(util.action_button(Action.FILTER, {}))
-        buttons.append(util.action_button(Action.EXIT, {}))
+        buttons.append(util.action_button(ConversationHandler.END, {}))
 
         keyboard = InlineKeyboardMarkup([buttons])
 
@@ -50,7 +53,7 @@ class Home:
             context.user_data[key] = query_data[key]
 
         action_mapping = {
-            Action.EXIT: callbacks.Home.stop,
+            ConversationHandler.END: callbacks.Home.stop,
             Action.CREATE: callbacks.ViewEntry.ask,
             Action.FILTER: callbacks.FilteredView.ask
         }

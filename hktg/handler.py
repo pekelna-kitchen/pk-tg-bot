@@ -1,17 +1,9 @@
 
-# from typing import Any, Dict, Tuple
-# import logging
-# from datetime import datetime
-
 from telegram import (
-    # ReplyKeyboardMarkup,
-    # ReplyKeyboardRemove,
-    # InlineKeyboardMarkup,
     Update
 )
 from telegram.ext import (
     ConversationHandler,
-    # ContextTypes,
     CommandHandler,
     CallbackQueryHandler,
     MessageHandler,
@@ -22,6 +14,30 @@ from hktg import dbwrapper, callbacks
 from hktg.constants import *
 
 def get():
+
+    entry_handler = ConversationHandler(
+        entry_points=[CallbackQueryHandler(callbacks.ViewEntry.ask)],
+
+        states={
+            State.VIEWING_ENTRY: [CallbackQueryHandler(callbacks.ViewEntry.ask)],
+            State.END: [CallbackQueryHandler(callbacks.Home.stop),]
+        },
+        fallbacks=[
+            CommandHandler("stop", callbacks.Home.stop),
+            CallbackQueryHandler(callbacks.Home.stop),
+            # CommandHandler("stop", stop_nested),
+        ],
+
+        map_to_parent={
+            # After showing data return to top level menu
+            # State.SHOWING: SHOWING,
+            
+            # Return to top level menu
+            ConversationHandler.END: State.FILTERED_VIEW,
+            # End conversation altogether
+            # STOPPING: END,
+        },
+    )
 
     return ConversationHandler(
         entry_points=[CommandHandler("start", callbacks.Home.ask)],
@@ -45,7 +61,7 @@ def get():
                 MessageHandler(filters.TEXT & ~filters.COMMAND, callbacks.AskAmount.answer)
             ],
             State.FILTERED_VIEW: [CallbackQueryHandler(callbacks.FilteredView.answer)],
-            State.VIEWING_ENTRY: [CallbackQueryHandler(callbacks.ViewEntry.answer)],
+            State.VIEWING_ENTRY: [[entry_handler]] # CallbackQueryHandler(callbacks.ViewEntry.answer)],
         },
         fallbacks=[
             CommandHandler("stop", callbacks.Home.stop),

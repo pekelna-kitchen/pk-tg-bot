@@ -68,7 +68,6 @@ class ViewEntry:
         ]]
         buttons.append([
             util.action_button(Action.BACK),
-            util.action_button(Action.HOME),
         ])
         keyboard = InlineKeyboardMarkup(buttons)
 
@@ -89,7 +88,10 @@ class ViewEntry:
         query_data = update.callback_query.data
         user_data = context.user_data
 
-        if user_data[UserDataKey.ACTION] == Action.CREATE:
+        if user_data[UserDataKey.ACTION] == Action.BACK:
+            return ConversationHandler.END
+
+        async def create(u, c):
             dbwrapper.update_instance(None, update.effective_user.name, {
                 "product_id": user_data[UserDataKey.PRODUCT],
                 "location_id": user_data[UserDataKey.LOCATION],
@@ -99,12 +101,12 @@ class ViewEntry:
             util.reset_data(context)
             return await callbacks.FilteredView.ask(update, context)
 
-        query_data = update.callback_query.data
-        for key in query_data:
-            context.user_data[key] = query_data[key]
+        # query_data = update.callback_query.data
+        # for key in query_data:
+        #     context.user_data[key] = query_data[key]
 
         mappings = {
-            Action.BACK: callbacks.FilteredView.ask,
+            Action.CREATE: create,
             Action.FILTER: callbacks.FilteredView.ask,
             Action.MODIFY: callbacks.ViewAmount.ask
         }

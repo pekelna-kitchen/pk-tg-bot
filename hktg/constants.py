@@ -1,6 +1,6 @@
 
 from enum import Enum
-
+from telegram.ext import ConversationHandler
 
 class State(Enum):
     CHOOSING_ACTION = 1
@@ -14,6 +14,7 @@ class State(Enum):
     ENTERING_CONTAINER_SYMBOL = 9
     ENTERING_CONTAINER_DESCRIPTION = 10
     VIEWING_ENTRY = 11
+    END = ConversationHandler.END
 
 
 class Action(Enum):
@@ -24,8 +25,7 @@ class Action(Enum):
     MODIFY = 5
     VIEW_ENTRY = 6
     VIEW_AMOUNT = 7
-    EXIT = 8
-    BACK = 9
+    BACK = 8
 
 ActionDescriptions = {
     Action.HOME: "🏠 Додому",
@@ -35,8 +35,8 @@ ActionDescriptions = {
     Action.MODIFY: "🖊️ Змінити",
     Action.VIEW_ENTRY: "🖊️ Змінити",
     Action.VIEW_AMOUNT: "🖊️ Змінити",
-    Action.EXIT: "🚪 Вийти",
     Action.BACK: "< Назад",
+    ConversationHandler.END: "🚪 Закінчити",
 }
 
 class UserDataKey(Enum):
