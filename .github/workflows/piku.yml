@@ -16,4 +16,4 @@ jobs:
 
       - name: deploy
         working-directory: ${{ github.workspace }}
-        run: piku/deploy.sh 
+        run: piku/deploy.sh ${{ env.PIKU_APP_NAME }} ${{ env.HOST_NAME }}
