@@ -70,7 +70,7 @@ class ViewAmount:
 
         mappings = {
             Action.BACK: callbacks.ViewEntry.ask,
-            Action.FILTER: callbacks.FilteredView.ask,
+            Action.VIEW_WAREHOUSE: callbacks.ViewWarehouse.ask,
             Action.MODIFY: lambda u, c: modify_mappings[query_data[UserDataKey.FIELD_TYPE]](u, c)
         }
 

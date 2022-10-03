@@ -29,6 +29,7 @@ class SelectContainer:
         buttons = util.split_list(buttons, 2)
 
         keyboard = InlineKeyboardMarkup(buttons)
+        # keyboard = ReplyKeyboardMarkup(buttons)
 
         await update.callback_query.edit_message_text(text="Виберіть тару:", reply_markup=keyboard)
 

@@ -54,7 +54,7 @@ class ViewEntry:
             InlineKeyboardButton(
                 text=product_name,
                 callback_data={
-                    UserDataKey.ACTION: Action.FILTER if id else Action.CREATE,
+                    UserDataKey.ACTION: Action.VIEW_ENTRY if id else Action.CREATE,
                     UserDataKey.FIELD_TYPE: UserDataKey.PRODUCT
                 }
             ),
@@ -99,7 +99,7 @@ class ViewEntry:
                 "amount": update.message.text,
             })
             util.reset_data(context)
-            return await callbacks.FilteredView.ask(update, context)
+            return await callbacks.ViewWarehouse.ask(update, context)
 
         # query_data = update.callback_query.data
         # for key in query_data:
@@ -107,7 +107,7 @@ class ViewEntry:
 
         mappings = {
             Action.CREATE: create,
-            Action.FILTER: callbacks.FilteredView.ask,
+            # Action.VIEW_WAREHOUSE: callbacks.ViewWarehouse.ask,
             Action.MODIFY: callbacks.ViewAmount.ask
         }
 
