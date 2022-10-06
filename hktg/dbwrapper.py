@@ -18,37 +18,40 @@ class Tables:
 import os
 DATABASE_URL = os.environ["DATABASE_URL"]
 
-def _join_dict(table: dict):
+conn = psycopg2.connect(DATABASE_URL)
+
+def _join_dict(table: dict, separator:str=', '):
     result = []
     for k in table:
         result.append("%s=%s" % (k, table[k]))
-    return ', '.join(result)
+    return separator.join(result)
 
 
 def _query(q: str):
-    conn = psycopg2.connect(DATABASE_URL)
     cur = conn.cursor()
-    logging.debug("SQL: %s" % q)
+    logging.info("SQL: %s" % q)
     cur.execute(q)
     # logging.info(cur.statusmessage)
-    return conn, cur
+    return cur
 
 # simple queries
 
 
-def get_table(name):
-    conn, cur = _query("SELECT * FROM %s;" % name)
+def get_table(name, where:dict={}):
+    where_str = "WHERE %s" % _join_dict(where, ' AND ') if where else ""
+
+    cur = _query("SELECT * FROM %s %s;" % (name, where_str))
     return cur.fetchall()
 
 
 def update_value(table_name, data: dict, criteria: dict):
-    conn, cur = _query("MODIFY %s SET %s WHERE %s;" %
+    cur = _query("MODIFY %s SET %s WHERE %s;" %
                        (table_name, _join_dict(data), _join_dict(criteria)))
     conn.commit()
 
 
 def delete_value(table_name, criteria: dict):
-    conn, cur = _query("DELETE FROM %s WHERE %s;" %
+    cur = _query("DELETE FROM %s WHERE %s;" %
                        (table_name, _join_dict(criteria)))
     conn.commit()
 
@@ -60,8 +63,7 @@ def insert_value(table_name, data: dict):
         columns.append(key)
         values.append("'%s'" % data[key])
 
-    conn, cur = _query("INSERT INTO %s (%s) VALUES (%s);" %
-                       (table_name, ", ".join(columns), ", ".join(values)))
+    cur = _query("INSERT INTO %s (%s) VALUES (%s);" % (table_name, ", ".join(columns), ", ".join(values)))
     conn.commit()
 
 # some more logic over
@@ -110,4 +112,3 @@ def update_instance(id, user_name, data):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    insert_value('hkdb_product', {"name": "Булгур"})

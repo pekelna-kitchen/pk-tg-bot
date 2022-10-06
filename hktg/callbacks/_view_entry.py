@@ -22,12 +22,12 @@ class ViewEntry:
 
         query_data = update.callback_query.data
 
-        id = product_id = amount = date = editor = instance = None
+        id = product_id = amount = change_date = editor = instance = None
         product_name = location_name = container = None
 
         if UserDataKey.CURRENT_ID in query_data:
             instance = util.find_in_table(dbwrapper.Tables.INSTANCE, 0, query_data[UserDataKey.CURRENT_ID])
-            (id, product_id, location_id, amount, container_id, date, editor) = instance
+            (id, product_id, location_id, amount, container_id, change_date, editor) = instance
 
             product_name = util.find_in_table(dbwrapper.Tables.PRODUCT, 0, product_id)[1]
             location_name = util.find_in_table(dbwrapper.Tables.LOCATION, 0, location_id)[1]
@@ -54,7 +54,7 @@ class ViewEntry:
             InlineKeyboardButton(
                 text=product_name,
                 callback_data={
-                    UserDataKey.ACTION: Action.FILTER if id else Action.CREATE,
+                    UserDataKey.ACTION: Action.VIEW_ENTRY if id else Action.CREATE,
                     UserDataKey.FIELD_TYPE: UserDataKey.PRODUCT
                 }
             ),
@@ -68,11 +68,10 @@ class ViewEntry:
         ]]
         buttons.append([
             util.action_button(Action.BACK),
-            util.action_button(Action.HOME),
         ])
         keyboard = InlineKeyboardMarkup(buttons)
 
-        editor_tuple = (editor, humanize.naturalday(date)) if editor else ('ніхто', 'ніколи')
+        editor_tuple = (editor, humanize.naturaltime(change_date.replace(tzinfo=None))) if editor else ('ніхто', 'ніколи')
 
         if update.callback_query:
             await update.callback_query.edit_message_text(text=ENTRY_MESSAGE % editor_tuple, reply_markup=keyboard)
@@ -89,7 +88,10 @@ class ViewEntry:
         query_data = update.callback_query.data
         user_data = context.user_data
 
-        if user_data[UserDataKey.ACTION] == Action.CREATE:
+        if user_data[UserDataKey.ACTION] == Action.BACK:
+            return ConversationHandler.END
+
+        async def create(u, c):
             dbwrapper.update_instance(None, update.effective_user.name, {
                 "product_id": user_data[UserDataKey.PRODUCT],
                 "location_id": user_data[UserDataKey.LOCATION],
@@ -97,15 +99,15 @@ class ViewEntry:
                 "amount": update.message.text,
             })
             util.reset_data(context)
-            return await callbacks.FilteredView.ask(update, context)
+            return await callbacks.ViewWarehouse.ask(update, context)
 
-        query_data = update.callback_query.data
-        for key in query_data:
-            context.user_data[key] = query_data[key]
+        # query_data = update.callback_query.data
+        # for key in query_data:
+        #     context.user_data[key] = query_data[key]
 
         mappings = {
-            Action.BACK: callbacks.FilteredView.ask,
-            Action.FILTER: callbacks.FilteredView.ask,
+            Action.CREATE: create,
+            # Action.VIEW_WAREHOUSE: callbacks.ViewWarehouse.ask,
             Action.MODIFY: callbacks.ViewAmount.ask
         }
 
