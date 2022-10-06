@@ -69,6 +69,11 @@ def insert_value(table_name, data: dict):
 # some more logic over
 
 
+def find_in_table(table_name, index, comparable):
+
+    table = get_table(table_name)
+    return next((x for x in table if x[index] == comparable), None)
+
 def update_limit(product_id, amount, container_id):
     limits = get_table(LIMIT)
     limit = next((x for x in limits if x[0] == product_id), None)

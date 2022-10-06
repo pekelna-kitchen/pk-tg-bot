@@ -22,12 +22,12 @@ class ViewAmount:
         query_data = update.callback_query.data
         user_data = context.user_data
 
-        instance = util.find_in_table(dbwrapper.Tables.INSTANCE, 0, user_data[UserDataKey.CURRENT_ID])
+        instance = dbwrapper.find_in_table(dbwrapper.Tables.INSTANCE, 0, user_data[UserDataKey.CURRENT_ID])
         (id, product_id, location_id, amount, container, date, editor) = instance
 
-        product_name = util.find_in_table(dbwrapper.Tables.PRODUCT, 0, product_id)[1]
-        location_name = util.find_in_table(dbwrapper.Tables.LOCATION, 0, location_id)[1]
-        container_symbol = util.find_in_table(dbwrapper.Tables.CONTAINER, 0, container)[1]
+        product_name = dbwrapper.find_in_table(dbwrapper.Tables.PRODUCT, 0, product_id)[1]
+        location_name = dbwrapper.find_in_table(dbwrapper.Tables.LOCATION, 0, location_id)[1]
+        container_symbol = dbwrapper.find_in_table(dbwrapper.Tables.CONTAINER, 0, container)[1]
 
         buttons = [[
             InlineKeyboardButton(

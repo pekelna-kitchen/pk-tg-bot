@@ -7,7 +7,7 @@ from hktg.constants import (
     State,
     UserDataKey
 )
-from hktg import dbwrapper, util, callbacks
+from hktg import dbwrapper, callbacks
 
 class AskAmount:
     @staticmethod
@@ -23,20 +23,20 @@ class AskAmount:
 
         if user_data[UserDataKey.ACTION] == Action.MODIFY:
             if user_data[UserDataKey.FIELD_TYPE] == UserDataKey.LIMIT:
-                product_name = util.find_in_table(
+                product_name = dbwrapper.find_in_table(
                     products, 0, user_data[UserDataKey.CURRENT_ID])
-                container_symbol = util.find_in_table(
+                container_symbol = dbwrapper.find_in_table(
                     containers, 0, user_data[UserDataKey.CONTAINER])[1]
                 message = LIMIT_MESSAGE % (product_name, container_symbol)
 
             else:
-                instance = util.find_in_table(
+                instance = dbwrapper.find_in_table(
                     instances, 0, user_data[UserDataKey.CURRENT_ID])
                 (id, product_id, location_id, amount,
                  container, date, editor) = instance
-                product_name = util.find_in_table(products, 0, product_id)[1]
-                location_name = util.find_in_table(locations, 0, location_id)[1]
-                container_symbol = util.find_in_table(
+                product_name = dbwrapper.find_in_table(products, 0, product_id)[1]
+                location_name = dbwrapper.find_in_table(locations, 0, location_id)[1]
+                container_symbol = dbwrapper.find_in_table(
                     containers, 0, user_data[UserDataKey.CONTAINER])[1]
 
                 message = AMOUNT_MESSAGE % (
@@ -44,11 +44,11 @@ class AskAmount:
 
         elif user_data[UserDataKey.ACTION] == Action.CREATE:
 
-            product_name = util.find_in_table(
+            product_name = dbwrapper.find_in_table(
                 products, 0, user_data[UserDataKey.CONTAINER])[1]
-            location_name = util.find_in_table(
+            location_name = dbwrapper.find_in_table(
                 locations, 0, user_data[UserDataKey.LOCATION])[1]
-            container_symbol = util.find_in_table(
+            container_symbol = dbwrapper.find_in_table(
                 containers, 0, user_data[UserDataKey.CONTAINER])[1]
 
             message = ADD_AMOUNT_MESSAGE % (

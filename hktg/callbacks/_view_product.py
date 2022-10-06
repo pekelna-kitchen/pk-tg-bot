@@ -26,15 +26,15 @@ class ViewProduct:
 
         buttons = []
 
-        product_id, product_name, product_sym, limit_container, limit_amount = util.find_in_table(
+        product_id, product_name, product_sym, limit_container, limit_amount = dbwrapper.find_in_table(
             dbwrapper.Tables.PRODUCT, 0, user_data.action.product_id)
 
         instances = dbwrapper.get_table(dbwrapper.Tables.INSTANCE, {
             'product_id': user_data.action.product_id
         })
         for (id, product, location, amount, container,  change_date, editor) in instances:
-            cont_id, cont_sym, cont_desc = util.find_in_table(dbwrapper.Tables.CONTAINER, 0, container)
-            _, location_name, location_symbol = util.find_in_table(dbwrapper.Tables.LOCATION, 0, location)
+            cont_id, cont_sym, cont_desc = dbwrapper.find_in_table(dbwrapper.Tables.CONTAINER, 0, container)
+            _, location_name, location_symbol = dbwrapper.find_in_table(dbwrapper.Tables.LOCATION, 0, location)
 
             product_info = "%s %s" % (amount, cont_desc)
             product_title = " ".join(
@@ -47,9 +47,14 @@ class ViewProduct:
                 callback_data=UserData(action=Action.VIEW_ENTRY, entry_id=id)
             )])
 
-        buttons.append(
-            [util.action_button(Action.BACK),]
-        )
+        buttons.append([
+            InlineKeyboardButton(
+                text="🔔 : %s%s" % (limit_amount, limit_container) if limit_container else "🔕",
+                # TODO: edit limit
+                callback_data=UserData(action=Action.VIEW_PRODUCT, entry_id=product_id)
+            ),
+            util.action_button(Action.BACK),
+        ])
         keyboard = InlineKeyboardMarkup(buttons)
 
         product_description = "%s %s" % (product_sym, product_name)

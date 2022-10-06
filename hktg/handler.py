@@ -42,6 +42,33 @@ def get():
         },
     )
 
+    product_handler = ConversationHandler(
+        entry_points=[CallbackQueryHandler(callbacks.ViewProduct.ask)],
+
+        states={
+            State.VIEWING_ENTRY: [CallbackQueryHandler(callbacks.ViewEntry.ask)],
+            State.CHOOSING_LOCATION: [CallbackQueryHandler(callbacks.SelectLocation.ask)],
+            # State.CHOOSING_LOCATION: [CallbackQueryHandler(select_location.SelectLocation.answer)],
+            State.CHOOSING_PRODUCT: [CallbackQueryHandler(callbacks.SelectProduct.ask)],
+            State.CHOOSING_CONTAINER: [CallbackQueryHandler(callbacks.SelectContainer.answer)],
+        },
+        fallbacks=[
+            # CallbackQueryHandler(callbacks.Home.stop),
+            # CommandHandler("stop", stop_nested),
+        ],
+
+        map_to_parent={
+            # After showing data return to top level menu
+            # State.SHOWING: SHOWING,
+
+            # Return to top level menu
+            State.VIEWING_ENTRY: State.VIEWING_ENTRY,
+            ConversationHandler.END: State.VIEWING_WAREHOUSE,
+            # End conversation altogether
+            # STOPPING: END,
+        },
+    )
+
 
     warehouse_handler = ConversationHandler(
         entry_points=[CallbackQueryHandler(callbacks.ViewEntry.ask)],

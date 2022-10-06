@@ -37,11 +37,15 @@ def action_button(action: Action, callback_data={}):
     return InlineKeyboardButton(text=Action.description(action), callback_data=callback_data)
 
 
-def find_in_table(table_name, index, comparable):
+# 
+def find_tuple_element(tuples, comparables: dict):
+    def check_tuple_elem(t):
+        for key in comparables:
+            if t[key] != comparables[key]:
+                return False
+        return True
 
-    from hktg.dbwrapper import get_table
-
-    table = get_table(table_name)
-    return next((x for x in table if x[index] == comparable), None)
+    return next((x for x in tuples if check_tuple_elem(x)), None)
  
+
 # Action.MODIFY: lambda u, c: update_mapping[query_data[UserDataKey.ACTION]](u, c)

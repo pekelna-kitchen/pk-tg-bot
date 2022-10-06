@@ -21,7 +21,7 @@ class SelectContainer:
                     containers_symbol, containers_desc), callback_data=container_id),
             )
 
-        is_user = util.find_in_table(dbwrapper.Tables.TG_USERS, 1, str(update.effective_user.id))
+        is_user = dbwrapper.find_in_table(dbwrapper.Tables.TG_USERS, 1, str(update.effective_user.id))
 
         if is_user:
             buttons.append(util.action_button(Action.CREATE, {}))

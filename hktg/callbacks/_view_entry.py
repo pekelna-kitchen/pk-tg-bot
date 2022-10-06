@@ -26,20 +26,20 @@ class ViewEntry:
         product_name = location_name = container = None
 
         if UserDataKey.CURRENT_ID in query_data:
-            instance = util.find_in_table(dbwrapper.Tables.INSTANCE, 0, query_data[UserDataKey.CURRENT_ID])
+            instance = dbwrapper.find_in_table(dbwrapper.Tables.INSTANCE, 0, query_data[UserDataKey.CURRENT_ID])
             (id, product_id, location_id, amount, container_id, change_date, editor) = instance
 
-            product_name = util.find_in_table(dbwrapper.Tables.PRODUCT, 0, product_id)[1]
-            location_name = util.find_in_table(dbwrapper.Tables.LOCATION, 0, location_id)[1]
-            container = util.find_in_table(dbwrapper.Tables.CONTAINER, 0, container_id)
+            product_name = dbwrapper.find_in_table(dbwrapper.Tables.PRODUCT, 0, product_id)[1]
+            location_name = dbwrapper.find_in_table(dbwrapper.Tables.LOCATION, 0, location_id)[1]
+            container = dbwrapper.find_in_table(dbwrapper.Tables.CONTAINER, 0, container_id)
 
         if not instance:
             if UserDataKey.PRODUCT in context.user_data:
-                product_id = util.find_in_table(dbwrapper.Tables.PRODUCT, 0, product_id)[1]
+                product_id = dbwrapper.find_in_table(dbwrapper.Tables.PRODUCT, 0, product_id)[1]
             if UserDataKey.PRODUCT in context.user_data:
-                location_name = util.find_in_table(dbwrapper.Tables.PRODUCT, 0, product_id)[1]
+                location_name = dbwrapper.find_in_table(dbwrapper.Tables.PRODUCT, 0, product_id)[1]
 
-        product_name = util.find_in_table(dbwrapper.Tables.PRODUCT, 0, product_id)[1] if product_id else None
+        product_name = dbwrapper.find_in_table(dbwrapper.Tables.PRODUCT, 0, product_id)[1] if product_id else None
 
         amount_tuple = (amount, container[1] if container else None)
 

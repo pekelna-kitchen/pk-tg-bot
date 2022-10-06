@@ -28,8 +28,8 @@ class Home:
         # admins = dbwrapper.get_table(dbwrapper.Tables.TG_ADMINS)
         # locations = dbwrapper.get_table(dbwrapper.Tables.LOCATION)
 
-        # is_user = util.find_in_table(dbwrapper.Tables.TG_USERS, 1, str(update.effective_user.id))
-        # is_admin = is_user and util.find_in_table(dbwrapper.Tables.TG_ADMINS, 1, is_user[0])
+        # is_user = dbwrapper.find_in_table(dbwrapper.Tables.TG_USERS, 1, str(update.effective_user.id))
+        # is_admin = is_user and dbwrapper.find_in_table(dbwrapper.Tables.TG_ADMINS, 1, is_user[0])
 
         import git
         repo = git.Repo(search_parent_directories=True)
