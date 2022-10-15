@@ -7,7 +7,7 @@ from hktg.constants import (
     State,
     UserDataKey
 )
-from hktg import dbwrapper, callbacks
+from hktg import dbwrapper, warehouse
 
 class AskAmount:
     @staticmethod
@@ -31,14 +31,14 @@ class AskAmount:
         user_data = context.user_data['data']
 
         if not update.message.text.isdigit():
-            return await callbacks.AskAmount.ask(update, context)
+            return await warehouse.AskAmount.ask(update, context)
 
         if isinstance(user_data, dbwrapper.Product):
             user_data.limit_amount = int(update.message.text)
-            return await callbacks.ViewProduct.ask(update, context)
+            return await warehouse.ViewProduct.ask(update, context)
 
         if isinstance(user_data, dbwrapper.Entry):
             user_data.amount = int(update.message.text)
-            return await callbacks.ViewEntry.ask(update, context)
+            return await warehouse.ViewEntry.ask(update, context)
 
         # logging.error("Unexpected action: %s" % user_data)

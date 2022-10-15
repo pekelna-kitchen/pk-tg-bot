@@ -11,7 +11,7 @@ from hktg.constants import (
     UserDataKey,
     State
 )
-from hktg import dbwrapper, util, callbacks
+from hktg import dbwrapper, util, warehouse
 
 from hktg.strings import SHOWING_TEXT, COMEBACK_TEXT
 
@@ -66,9 +66,8 @@ class Home:
         #     context.user_data[key] = query_data[key]
 
         action_mapping = {
-            Action.VIEW_WAREHOUSE: callbacks.ViewWarehouse.ask,
-            Action.VIEW_PRODUCTS: callbacks.ViewProducts.ask,
-            ConversationHandler.END: callbacks.Home.stop,
+            Action.VIEW_PRODUCTS: warehouse.ViewProducts.ask,
+            ConversationHandler.END: home.Home.stop,
         }
 
         return await action_mapping[query_data.action](update, context)

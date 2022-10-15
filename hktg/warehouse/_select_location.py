@@ -7,7 +7,7 @@ from hktg.constants import (
     State,
     UserDataKey
 )
-from hktg import dbwrapper, util, callbacks
+from hktg import dbwrapper, util, warehouse
 from hktg.strings import SELECT_LOCATION_TEXT
 
 class SelectLocation:
@@ -44,23 +44,5 @@ class SelectLocation:
 
         if isinstance(user_data, dbwrapper.Entry):
             user_data.location_id = selected_location
-            return await callbacks.ViewEntry.ask(update, context)
-
-        # if isentry(selected_product, dict):
-        #     return await callbacks.AddProduct.ask(update, context)
-
-        # if context.user_data[UserDataKey.ACTION] == Action.MODIFY:
-        #     if context.user_data[UserDataKey.FIELD_TYPE] == UserDataKey.LOCATION:
-        #         dbwrapper.update_value(dbwrapper.Tables.ENTRIES, {
-        #             'location_id': selected_location
-        #         }, {
-        #             'id': context.user_data[UserDataKey.CURRENT_ID]
-        #         })
-        #     else:
-        #         logging.error("Unexpected datafield %s" %
-        #                       context.user_data[UserDataKey.FIELD_TYPE])
-        #     return await callbacks.Home.ask(update, context)
-        # elif context.user_data[UserDataKey.ACTION] == Action.CREATE:
-        #     context.user_data[UserDataKey.PRODUCT] = selected_product
-        #     return await callbacks.SelectContainer.ask(update, context)
+            return await warehouse.ViewEntry.ask(update, context)
 

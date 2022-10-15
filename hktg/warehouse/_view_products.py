@@ -10,7 +10,7 @@ from hktg.constants import (
     UserDataKey,
     State
 )
-from hktg import dbwrapper, util, callbacks
+from hktg import dbwrapper, util, warehouse
 from hktg.strings import FILTERED_VIEW_TEXT, UNFILTERED_TEXT
 
 class ViewProducts:
@@ -68,7 +68,7 @@ class ViewProducts:
     
         if isinstance(qdata, dbwrapper.Product):
             context.user_data['data'] = qdata
-            return await callbacks.ViewProduct.ask(update, context)
+            return await warehouse.ViewProduct.ask(update, context)
 
         # user_data = context.user_data['data']
         # query_data = UserData().with_obj(update.callback_query.data)
@@ -77,6 +77,6 @@ class ViewProducts:
         if isinstance(qdata, UserData):
             if qdata.action == Action.CREATE:
                 context.user_data['data'] = dbwrapper.Product()
-                return await callbacks.ViewProduct.ask(update, context)
+                return await warehouse.ViewProduct.ask(update, context)
             if qdata.action == Action.HOME:
-                return await callbacks.Home.ask(update, context)
+                return await home.Home.ask(update, context)

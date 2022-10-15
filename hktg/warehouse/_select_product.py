@@ -7,7 +7,7 @@ from hktg.constants import (
     State,
     UserDataKey
 )
-from hktg import dbwrapper, util, callbacks
+from hktg import dbwrapper, util, warehouse
 
 class SelectProduct:
     @staticmethod
@@ -46,20 +46,4 @@ class SelectProduct:
 
         if isinstance(user_data, dbwrapper.Entry):
             user_data.product_id = selected_product
-            return await callbacks.ViewEntry.ask(update, context)
-
-        # if isentry(selected_product, dict):
-        #     return await callbacks.AddProduct.ask(update, context)
-
-        # if context.user_data[UserDataKey.ACTION] == Action.MODIFY:
-        #     if context.user_data[UserDataKey.FIELD_TYPE] == UserDataKey.PRODUCT:
-        #         dbwrapper.update_value(
-        #             dbwrapper.Tables.ENTRIES, {'product_id': selected_product}, 
-        #             {'id': context.user_data[UserDataKey.CURRENT_ID]})
-        #     else:
-        #         logging.error("Unexpected datafield %s" %
-        #                       context.user_data[UserDataKey.FIELD_TYPE])
-        #     return await callbacks.Home.ask(update, context)
-        # elif context.user_data[UserDataKey.ACTION] == Action.CREATE:
-        #     context.user_data[UserDataKey.PRODUCT] = selected_product
-        #     return await callbacks.SelectContainer.ask(update, context)
+            return await warehouse.ViewEntry.ask(update, context)

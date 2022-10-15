@@ -24,28 +24,21 @@ class State(Enum):
 
 class Action(Enum):
     HOME = 1
-    VIEW_WAREHOUSE = 2
+    BACK = 2
     VIEW_PRODUCTS = 3
     CREATE = 4
     DELETE = 5
     MODIFY = 6
-    VIEW_ENTRY = 7
-    VIEW_AMOUNT = 8
-    VIEW_PRODUCT = 9
-    BACK = 10
 
     @staticmethod
     def description(action):
         descriptions = {
             Action.HOME: "🏠 Додому",
-            Action.VIEW_WAREHOUSE: "🔍 До складу",
-            Action.VIEW_PRODUCTS: "🔍 До продуктів",
+            Action.BACK: "< Назад",
+            Action.VIEW_PRODUCTS: "🔍 До складу",
             Action.CREATE: "➕ Додати",
             Action.DELETE: "➖ Видалити",
             Action.MODIFY: "🖊️ Змінити",
-            Action.VIEW_ENTRY: "🖊️ entry",
-            Action.VIEW_AMOUNT: "🖊️ amount",
-            Action.BACK: "< Назад",
             ConversationHandler.END: "🚪 Закінчити",
         }
         return descriptions[action]

@@ -4,7 +4,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 from hktg.constants import UserDataKey
-from hktg import dbwrapper, callbacks, strings
+from hktg import dbwrapper, warehouse, strings
 from hktg.constants import (
     Action,
     State,
@@ -27,4 +27,4 @@ class AskSymbol:
 
         if isinstance(user_data, dbwrapper.Product):
             user_data.symbol = update.message.text
-            return await callbacks.ViewProduct.ask(update, context)
+            return await warehouse.ViewProduct.ask(update, context)

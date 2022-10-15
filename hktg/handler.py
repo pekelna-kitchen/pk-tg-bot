@@ -10,27 +10,26 @@ from telegram.ext import (
     filters
 )
 
-from hktg import dbwrapper, callbacks
+from hktg import dbwrapper, warehouse, home
 from hktg.constants import *
 
 def get():
 
     entry_handler = ConversationHandler(
-        entry_points=[CallbackQueryHandler(callbacks.ViewWarehouse.answer)],
+        entry_points=[CallbackQueryHandler(warehouse.ViewEntry.answer)],
 
         states={
-            State.VIEWING_WAREHOUSE: [CallbackQueryHandler(callbacks.ViewWarehouse.answer)],
-            State.VIEWING_ENTRY: [CallbackQueryHandler(callbacks.ViewEntry.answer)],
+            State.VIEWING_ENTRY: [CallbackQueryHandler(warehouse.ViewEntry.answer)],
 
-            State.CHOOSING_LOCATION: [CallbackQueryHandler(callbacks.SelectLocation.answer)],
-            State.CHOOSING_PRODUCT: [CallbackQueryHandler(callbacks.SelectProduct.answer)],
-            State.CHOOSING_CONTAINER: [CallbackQueryHandler(callbacks.SelectContainer.answer)],
-            State.ENTERING_AMOUNT: [MessageHandler(filters.TEXT, callbacks.AskAmount.answer)],
-            State.ENTERING_SYMBOL: [MessageHandler(filters.TEXT & ~filters.COMMAND, callbacks.AskSymbol.answer)],
-            State.ENTERING_TEXT: [MessageHandler(filters.TEXT & ~filters.COMMAND, callbacks.AskText.answer)],
+            State.CHOOSING_LOCATION: [CallbackQueryHandler(warehouse.SelectLocation.answer)],
+            State.CHOOSING_PRODUCT: [CallbackQueryHandler(warehouse.SelectProduct.answer)],
+            State.CHOOSING_CONTAINER: [CallbackQueryHandler(warehouse.SelectContainer.answer)],
+            State.ENTERING_AMOUNT: [MessageHandler(filters.TEXT, warehouse.AskAmount.answer)],
+            State.ENTERING_SYMBOL: [MessageHandler(filters.TEXT & ~filters.COMMAND, warehouse.AskSymbol.answer)],
+            State.ENTERING_TEXT: [MessageHandler(filters.TEXT & ~filters.COMMAND, warehouse.AskText.answer)],
         },
         fallbacks=[
-            CallbackQueryHandler(callbacks.Home.ask),
+            CallbackQueryHandler(home.Home.ask),
             # CommandHandler("stop", stop_nested),
         ],
 
@@ -45,42 +44,22 @@ def get():
         },
     )
 
-
-    # warehouse_handler = ConversationHandler(
-    #     entry_points=[CallbackQueryHandler(callbacks.ViewWarehouse.ask)],
-
-    #     states={
-    #         State.VIEWING_ENTRY: [CallbackQueryHandler(callbacks.ViewEntry.ask)],
-    #         State.CHOOSING_LOCATION: [CallbackQueryHandler(callbacks.SelectLocation.ask)],
-    #         State.CHOOSING_PRODUCT: [CallbackQueryHandler(callbacks.SelectProduct.ask)],
-    #         State.CHOOSING_CONTAINER: [CallbackQueryHandler(callbacks.SelectContainer.answer)],
-    #     },
-    #     fallbacks=[
-    #         # CallbackQueryHandler(callbacks.Home.stop),
-    #         # CommandHandler("stop", stop_nested),
-    #     ],
-
-    #     map_to_parent={
-    #         State.CHOOSING_ACTION: State.CHOOSING_ACTION,
-    #     },
-    # )
-
     products_handler = ConversationHandler(
         entry_points=[
-            CallbackQueryHandler(callbacks.ViewProducts.answer),
-            CommandHandler('products', callbacks.ViewProducts.answer)
+            CallbackQueryHandler(warehouse.ViewProducts.answer),
+            CommandHandler('products', warehouse.ViewProducts.answer)
         ],
 
         states={
-            State.VIEWING_PRODUCTS: [CallbackQueryHandler(callbacks.ViewProducts.answer)],
-            State.VIEWING_PRODUCT: [CallbackQueryHandler(callbacks.ViewProduct.answer)],
-            State.CHOOSING_CONTAINER: [CallbackQueryHandler(callbacks.SelectContainer.answer)],
-            State.ENTERING_AMOUNT: [MessageHandler(filters.TEXT, callbacks.AskAmount.answer)],
-            State.ENTERING_SYMBOL: [MessageHandler(filters.TEXT & ~filters.COMMAND, callbacks.AskSymbol.answer)],
-            State.ENTERING_TEXT: [MessageHandler(filters.TEXT & ~filters.COMMAND, callbacks.AskText.answer)],
+            State.VIEWING_PRODUCTS: [CallbackQueryHandler(warehouse.ViewProducts.answer)],
+            State.VIEWING_PRODUCT: [CallbackQueryHandler(warehouse.ViewProduct.answer)],
+            State.CHOOSING_CONTAINER: [CallbackQueryHandler(warehouse.SelectContainer.answer)],
+            State.ENTERING_AMOUNT: [MessageHandler(filters.TEXT, warehouse.AskAmount.answer)],
+            State.ENTERING_SYMBOL: [MessageHandler(filters.TEXT & ~filters.COMMAND, warehouse.AskSymbol.answer)],
+            State.ENTERING_TEXT: [MessageHandler(filters.TEXT & ~filters.COMMAND, warehouse.AskText.answer)],
         },
         fallbacks=[
-            CallbackQueryHandler(callbacks.Home.ask),
+            CallbackQueryHandler(home.Home.ask),
         ],
 
         map_to_parent={
@@ -90,17 +69,17 @@ def get():
 
     return ConversationHandler(
         name="Hell Kitchen Bot",
-        entry_points=[CommandHandler("start", callbacks.Home.ask)],
+        entry_points=[CommandHandler("start", home.Home.ask)],
 
         states={
-            State.CHOOSING_ACTION: [ CallbackQueryHandler(callbacks.Home.answer) ],
+            State.CHOOSING_ACTION: [ CallbackQueryHandler(home.Home.answer) ],
             State.VIEWING_WAREHOUSE: [ entry_handler ],
             State.VIEWING_PRODUCTS: [ products_handler ],
-            # State.VIEWING_ENTRY: [ entry_handler ] # CallbackQueryHandler(callbacks.ViewEntry.answer)],
+            # State.VIEWING_ENTRY: [ entry_handler ] # CallbackQueryHandler(warehouse.ViewEntry.answer)],
         },
         fallbacks=[
-            CommandHandler("stop", callbacks.Home.stop),
-            CallbackQueryHandler(callbacks.Home.stop)
+            CommandHandler("stop", home.Home.stop),
+            CallbackQueryHandler(home.Home.stop)
         ],
         allow_reentry=True
     )

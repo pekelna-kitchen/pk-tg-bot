@@ -12,7 +12,7 @@ from hktg.constants import (
     UserData,
     State
 )
-from hktg import dbwrapper, util, callbacks
+from hktg import dbwrapper, util, warehouse
 from hktg.strings import ENTRY_MESSAGE
 
 def create_button(text, callback_data):
@@ -88,7 +88,11 @@ class ViewEntry:
 
         if isinstance(query_data, UserData):
             if query_data.action == Action.BACK:
-                return await callbacks.ViewWarehouse.ask(update, context)
+                entry = dbwrapper.Entry()
+                if isinstance(context.user_data['data'], dbwrapper.Entry):
+                    entry = context.user_data['data']
+                user_data['data'] = dbwrapper.Product(entry.product_id)
+                return await warehouse.ViewProduct.ask(update, context)
 
             entry_data : dbwrapper.Entry = context.user_data['data']
             datadict = entry_data.to_sql()
@@ -98,28 +102,15 @@ class ViewEntry:
             if query_data.action == Action.CREATE:
                 dbwrapper.insert_value(dbwrapper.Tables.ENTRIES, datadict)
 
-            del context.user_data['data']
-            return await callbacks.ViewWarehouse.ask(update, context)
-
-        # if user_data[UserDataKey.ACTION] == Action.BACK:
-        #     return ConversationHandler.END
-
-        # async def create(u, c):
-        #     dbwrapper.update_entry(None, update.effective_user.name, {
-        #         "product_id": user_data[UserDataKey.PRODUCT],
-        #         "location_id": user_data[UserDataKey.LOCATION],
-        #         "container_id": user_data[UserDataKey.CONTAINER],
-        #         "amount": update.message.text,
-        #     })
-        #     util.reset_data(context)
-        #     return await callbacks.ViewWarehouse.ask(update, context)
+            context.user_data['data'] = dbwrapper.Product(entry_data.product_id)
+            return await warehouse.ViewProduct.ask(update, context)
 
         if isinstance(query_data, ViewEntry):
             if query_data.field_type == ViewEntry.FieldType.Product:
-                return await callbacks.SelectProduct.ask(update, context)
+                return await warehouse.SelectProduct.ask(update, context)
             if query_data.field_type == ViewEntry.FieldType.Location:
-                return await callbacks.SelectLocation.ask(update, context)
+                return await warehouse.SelectLocation.ask(update, context)
             if query_data.field_type == ViewEntry.FieldType.Amount:
-                return await callbacks.AskAmount.ask(update, context)
+                return await warehouse.AskAmount.ask(update, context)
             if query_data.field_type == ViewEntry.FieldType.Container:
-                return await callbacks.SelectContainer.ask(update, context)
+                return await warehouse.SelectContainer.ask(update, context)
