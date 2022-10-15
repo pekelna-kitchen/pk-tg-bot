@@ -18,15 +18,17 @@ class State(Enum):
     ENTERING_TEXT = 10
     VIEWING_ENTRY = 11
     VIEWING_PRODUCT = 12
+    VIEWING_MAP = 13
 
 
 class Action(Enum):
     HOME = 1
     BACK = 2
     VIEW_PRODUCTS = 3
-    CREATE = 4
-    DELETE = 5
-    SAVE = 6
+    VIEW_MAP = 4
+    CREATE = 5
+    DELETE = 6
+    SAVE = 7
     END = ConversationHandler.END
 
     @staticmethod
@@ -35,7 +37,8 @@ class Action(Enum):
             Action.HOME: "🏠 Додому",
             Action.BACK: "< Назад",
             Action.VIEW_PRODUCTS: "🔍 До складу",
-            Action.CREATE: "➕ Додати",
+            Action.VIEW_MAP: "🛞 До водіїв",
+            Action.CREATE: "➕ Створити",
             Action.DELETE: "➖ Видалити",
             Action.SAVE: "🖊️ Зберегти",
             ConversationHandler.END: "🚪 Закінчити",
@@ -44,14 +47,3 @@ class Action(Enum):
 
     def __str__(self):
         return self.name
-
-class UserDataKey(Enum):
-    ACTION = 1
-    PRODUCT = 2
-    LOCATION = 3
-    CONTAINER = 4
-    AMOUNT = 5
-    CONTAINER_SYMBOL = 6
-    FIELD_TYPE = 7
-    LIMIT = 8
-    CURRENT_ID = 9

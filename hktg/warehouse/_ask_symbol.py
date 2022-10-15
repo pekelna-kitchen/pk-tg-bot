@@ -3,7 +3,7 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from hktg import dbwrapper, warehouse, strings
+from hktg import db, warehouse, strings
 from hktg.constants import (
     Action,
     State
@@ -23,6 +23,6 @@ class AskSymbol:
 
         user_data = context.user_data['data']
 
-        if isinstance(user_data, dbwrapper.Product):
+        if isinstance(user_data, db.Product):
             user_data.symbol = update.message.text
             return await warehouse.ViewProduct.ask(update, context)

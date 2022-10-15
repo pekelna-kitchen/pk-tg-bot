@@ -6,7 +6,7 @@ from hktg.constants import (
     Action,
     State,
 )
-from hktg import dbwrapper, warehouse
+from hktg import db, warehouse
 
 class AskAmount:
     @staticmethod
@@ -32,11 +32,11 @@ class AskAmount:
         if not update.message.text.isdigit():
             return await warehouse.AskAmount.ask(update, context)
 
-        if isinstance(user_data, dbwrapper.Product):
+        if isinstance(user_data, db.Product):
             user_data.limit_amount = int(update.message.text)
             return await warehouse.ViewProduct.ask(update, context)
 
-        if isinstance(user_data, dbwrapper.Entry):
+        if isinstance(user_data, db.Entry):
             user_data.amount = int(update.message.text)
             return await warehouse.ViewEntry.ask(update, context)
 

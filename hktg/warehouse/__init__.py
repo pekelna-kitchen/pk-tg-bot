@@ -24,7 +24,7 @@ def get_handler():
     from hktg import home
 
     entry_handler = ConversationHandler(
-        entry_points=[CallbackQueryHandler(ViewEntry.answer)],
+        entry_points=[CallbackQueryHandler(ViewEntry.ask)],
 
         states={
             State.VIEWING_ENTRY: [CallbackQueryHandler(ViewEntry.answer)],

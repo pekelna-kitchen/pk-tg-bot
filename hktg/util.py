@@ -38,12 +38,15 @@ def action_button(action: Action):
 
 
 # 
-def find_tuple_element(tuples, comparables: dict):
-    def check_tuple_elem(t):
-        for key in comparables:
-            if t[key] != comparables[key]:
-                return False
-        return True
 
-    return next((x for x in tuples if check_tuple_elem(x)), None)
+def create_button(text, callback_data):
 
+    from hktg import db
+    from telegram import InlineKeyboardButton
+
+    if not text:
+        text = "➕"
+    types = (db.Location, db.Container, db.Product)
+    if isinstance(text, types):
+        text = text.desc()
+    return InlineKeyboardButton(text, callback_data=callback_data)

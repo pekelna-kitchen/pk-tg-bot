@@ -15,7 +15,7 @@ def get():
 
         states={
             State.CHOOSING_ACTION: [ CallbackQueryHandler(home.Home.answer) ],
-            State.VIEWING_PRODUCTS: [ driver.get_handler() ],
+            State.VIEWING_MAP: [ driver.get_handler() ],
             State.VIEWING_PRODUCTS: [ warehouse.get_handler() ],
         },
         fallbacks=[

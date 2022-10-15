@@ -3,7 +3,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 from hktg.constants import State
-from hktg import dbwrapper, warehouse, strings
+from hktg import db, warehouse, strings
 
 class AskText:
     @staticmethod
@@ -24,7 +24,7 @@ class AskText:
     async def answer(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
         user_data = context.user_data['data']
-        if isinstance(user_data, dbwrapper.Product):
+        if isinstance(user_data, db.Product):
             user_data.name = update.message.text
             return await warehouse.ViewProduct.ask(update, context)
 

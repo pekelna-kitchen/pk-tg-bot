@@ -11,14 +11,7 @@ from hktg.constants import (
     Action,
     State
 )
-from hktg import dbwrapper, util, warehouse, home
-from hktg.strings import ENTRY_MESSAGE
-
-def create_button(text, callback_data):
-    from telegram import InlineKeyboardButton
-    if not text:
-        text = "➕"
-    return InlineKeyboardButton(text, callback_data=callback_data)
+from hktg import db, util, warehouse, home
 
 
 @dataclass
@@ -42,12 +35,12 @@ class ViewMap:
 
         text = "Vodii"
         if update.callback_query:
-            # await update.callback_query.edit_message_media(media=)
+            # await update.callback_query.pin_message()
             await update.callback_query.edit_message_text(text, reply_markup=keyboard)
         else:
             await update.message.reply_text(text=text, reply_markup=keyboard)
 
-        return State.VIEWING_ENTRY
+        return State.VIEWING_MAP
 
     @staticmethod
     async def answer(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:

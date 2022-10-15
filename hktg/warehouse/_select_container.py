@@ -6,7 +6,7 @@ from hktg.constants import (
     Action,
     State,
 )
-from hktg import dbwrapper, util, warehouse
+from hktg import db, util, warehouse
 
 class SelectContainer:
     @staticmethod
@@ -14,7 +14,7 @@ class SelectContainer:
     
         from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-        containers = dbwrapper.get_table(dbwrapper.Tables.CONTAINER)
+        containers = db.get_table(db.Tables.CONTAINER)
         buttons = []
         for container_id, containers_symbol, containers_desc in containers:
             buttons.append(
@@ -37,10 +37,10 @@ class SelectContainer:
         selected_container = update.callback_query.data
         user_data = context.user_data['data']
 
-        if isinstance(user_data, dbwrapper.Product):
+        if isinstance(user_data, db.Product):
             user_data.limit_container = selected_container
             return await warehouse.ViewProduct.ask(update, context)
 
-        if isinstance(user_data, dbwrapper.Entry):
+        if isinstance(user_data, db.Entry):
             user_data.container_id = selected_container
             return await warehouse.ViewEntry.ask(update, context)

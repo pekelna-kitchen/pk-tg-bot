@@ -12,18 +12,7 @@ from hktg.constants import (
     Action,
     State
 )
-from hktg import dbwrapper, util, warehouse, strings
-
-
-def create_button(text, callback_data):
-    if not text:
-        text = "➕"
-    return InlineKeyboardButton(text, callback_data=callback_data)
-
-def entry_button(entry):
-    e = dbwrapper.Entry(*entry)
-    text = "%s %s (%s)" % (e.amount, e.container_symbol(), e.location_symbol())
-    return InlineKeyboardButton(text, callback_data=e)
+from hktg import db, util, warehouse, strings
 
 @dataclass
 class ViewProduct:
@@ -40,51 +29,57 @@ class ViewProduct:
 
         from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 
-        product_info : dbwrapper.Product = None
-        if isinstance(context.user_data['data'], dbwrapper.Product):
-            product_info = context.user_data['data']
-        else:
-            raise BaseException('ViewProduct.ask')
+        product_info : db.Product = context.user_data['data']
 
         # db entry or None
         origin = None
-        products = dbwrapper.get_table(dbwrapper.Tables.PRODUCT, {'id': product_info.id})
-        if products:
-            # product = util.find_tuple_element(products, {0: product_info.id})
-            origin = dbwrapper.Product(*products[0])
+        if product_info.id:
+            products = db.get_table(db.Tables.PRODUCT, {'id': product_info.id})
+            if products:
+                origin = db.Product(*products[0])
 
-        if product_info and product_info.id and origin:
-            product_info = origin
+            if not product_info.is_valid() and origin:
+                product_info = origin
 
         buttons = []
         # if not product_info.id:
         buttons.append([
             InlineKeyboardButton(text="Символ", callback_data=product_info),
             InlineKeyboardButton(text="Назва", callback_data=product_info),
-            InlineKeyboardButton(text="Тип тари ліміту", callback_data=product_info),
-            InlineKeyboardButton(text="Кількість ліміту", callback_data=product_info),
+            InlineKeyboardButton(text="🔔 скільки", callback_data=product_info),
+            InlineKeyboardButton(text="🔔 в чому", callback_data=product_info),
         ])
         buttons.append([
-            create_button(product_info.symbol, ViewProduct(ViewProduct.FieldType.Symbol)),
-            create_button(product_info.name, ViewProduct(ViewProduct.FieldType.Text)),
-            create_button(product_info.limit_amount, ViewProduct(ViewProduct.FieldType.LimitAmount)),
-            create_button(product_info.container_symbol(), ViewProduct(ViewProduct.FieldType.LimitContainerID)),
+            util.create_button(product_info.symbol, ViewProduct(ViewProduct.FieldType.Symbol)),
+            util.create_button(product_info.name, ViewProduct(ViewProduct.FieldType.Text)),
+            util.create_button(product_info.limit_amount, ViewProduct(ViewProduct.FieldType.LimitAmount)),
+            util.create_button(product_info.container(), ViewProduct(ViewProduct.FieldType.LimitContainerID)),
         ])
         
+        containers = db.get_table(db.Tables.CONTAINER)
+        locations = db.get_table(db.Tables.LOCATION)
+
         action_buttons = []
         if product_info.id:
-            entries = dbwrapper.get_table(dbwrapper.Tables.ENTRIES, {
+            entries = db.get_table(db.Tables.ENTRIES, {
                 'product_id': product_info.id
             })
-            for e in entries:
-                buttons.append([entry_button(e)])
+            for entry in entries:
+                e = db.Entry(*entry)
+                text = "%s %s (%s)" % (
+                    e.amount,
+                    e.container(containers).desc(),
+                    e.location(locations).desc()
+                )
+                buttons.append([InlineKeyboardButton(text, callback_data=e)])
 
-
-            if product_info.is_valid() and not origin == product_info:
+            if origin and origin != product_info:
                 action_buttons.append( util.action_button(Action.SAVE) )
+            else:
+                action_buttons.append(util.action_button(Action.CREATE))
 
         elif product_info.is_valid():
-            action_buttons.append( util.action_button(Action.CREATE) )
+            action_buttons.append(util.action_button(Action.SAVE))
 
         action_buttons.append(util.action_button(Action.BACK))
         buttons.append(action_buttons)
@@ -93,7 +88,7 @@ class ViewProduct:
 
         text = strings.NEW_PRODUCT_MESSAGE
         if product_info.id:
-            text = strings.PRODUCT_MESSAGE % (product_info.name or "??")
+            text = strings.PRODUCT_MESSAGE % (product_info.name or "новий продукт якийсь")
 
         if update.callback_query:
             await update.callback_query.edit_message_text(text=text, reply_markup=keyboard)
@@ -113,18 +108,26 @@ class ViewProduct:
             if query_data == Action.BACK:
                 return await warehouse.ViewProducts.ask(update, context)
 
-            product_info : dbwrapper.Product = context.user_data['data']
+            product_info : db.Product = context.user_data['data']
             datadict = product_info.to_sql()
 
             if query_data == Action.SAVE:
-                dbwrapper.update_value(dbwrapper.Tables.PRODUCT, datadict, {'id': product_info.id})
+                if product_info.id:
+                    db.update_value(db.Tables.PRODUCT, datadict, {'id': product_info.id})
+                    context.user_data['data'] = db.Product(id=product_info.id)
+                    return await warehouse.ViewProduct.ask(update, context)
+                else:
+                    db.insert_value(db.Tables.PRODUCT, datadict)
+                    del context.user_data['data']
+                    return await warehouse.ViewProducts.ask(update, context)
+
+
             if query_data == Action.CREATE:
-                dbwrapper.insert_value(dbwrapper.Tables.PRODUCT, datadict)
+                context.user_data['data'] = db.Entry(product_id=product_info.id)
+                return await warehouse.ViewEntry.ask(update, context)
 
-            del context.user_data['data']
-            return await warehouse.ViewProducts.ask(update, context)
 
-        if isinstance(query_data, dbwrapper.Entry):
+        if isinstance(query_data, db.Entry):
             context.user_data['data'] = query_data
             return await warehouse.ViewEntry.ask(update, context)
 

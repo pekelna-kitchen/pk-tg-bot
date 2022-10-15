@@ -11,11 +11,11 @@ from hktg.constants import (
     Action,
     State
 )
-from hktg import dbwrapper, util, warehouse, strings
+from hktg import util, warehouse, driver, strings
 
-from hktg.strings import SHOWING_TEXT, COMEBACK_TEXT
 
 DEVELOPER_CHAT_ID=os.environ.get('DEVELOPER_CHAT_ID')
+
 
 class Home:
     @staticmethod
@@ -28,12 +28,12 @@ class Home:
 
         if 'data' in context.user_data:
             del context.user_data['data']
-        # users = dbwrapper.get_table(dbwrapper.Tables.TG_USERS)
-        # admins = dbwrapper.get_table(dbwrapper.Tables.TG_ADMINS)
-        # locations = dbwrapper.get_table(dbwrapper.Tables.LOCATION)
+        # users = db.get_table(db.Tables.TG_USERS)
+        # admins = db.get_table(db.Tables.TG_ADMINS)
+        # locations = db.get_table(db.Tables.LOCATION)
 
-        # is_user = dbwrapper.find_in_table(dbwrapper.Tables.TG_USERS, 1, str(update.effective_user.id))
-        # is_admin = is_user and dbwrapper.find_in_table(dbwrapper.Tables.TG_ADMINS, 1, is_user[0])
+        # is_user = db.find_in_table(db.Tables.TG_USERS, 1, str(update.effective_user.id))
+        # is_admin = is_user and db.find_in_table(db.Tables.TG_ADMINS, 1, is_user[0])
 
         # import git
         # repo = git.Repo(search_parent_directories=True)
@@ -46,6 +46,7 @@ class Home:
         # )
 
         buttons = [
+            [ util.action_button(Action.VIEW_MAP), ],
             [ util.action_button(Action.VIEW_PRODUCTS), ],
             [ util.action_button(ConversationHandler.END), ],
         ]
@@ -54,7 +55,7 @@ class Home:
         if update.callback_query:
             await update.callback_query.edit_message_text(text=text, reply_markup=keyboard)
         else:
-            await update.message.reply_text(text=text, reply_markup=keyboard)
+            await update.message.reply_text(text=text, quote=True, reply_markup=keyboard)
 
         return State.CHOOSING_ACTION
 
@@ -65,6 +66,7 @@ class Home:
 
         action_mapping = {
             Action.VIEW_PRODUCTS: warehouse.ViewProducts.ask,
+            Action.VIEW_MAP: driver.ViewMap.ask,
             ConversationHandler.END: Home.stop,
         }
 
@@ -99,15 +101,15 @@ class Home:
 
         logging.error(msg="Exception while handling an update:", exc_info=context.error)
 
-        # traceback.format_exception returns the usual python message about an exception, but as a
-        # list of strings rather than a single string, so we have to join them together.
+        return
+
         tb_list = traceback.format_exception(None, context.error, context.error.__traceback__, limit=5, chain=False)
         tb_string = "\n".join(tb_list)
 
         # Build the message with some markup and additional information about what happened.
         # You might need to add some logic to deal with messages longer than the 4096 character limit.
         update_str = json.dumps(update.to_dict(), cls=util.EnhancedJSONEncoder, indent=2, ensure_ascii=False) if isinstance(update, Update) else update.__class__.__name__
-        # str(update)
+
         message = (
             f"An exception was raised while handling an update\n"
             f"<pre>update = {html.escape(str(update_str))}"

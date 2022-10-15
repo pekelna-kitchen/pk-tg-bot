@@ -6,7 +6,7 @@ from hktg.constants import (
     Action,
     State,
 )
-from hktg import dbwrapper, util, warehouse
+from hktg import db, util, warehouse
 
 class SelectProduct:
     @staticmethod
@@ -14,7 +14,7 @@ class SelectProduct:
 
         from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-        products = dbwrapper.get_table(dbwrapper.Tables.PRODUCT)
+        products = db.get_table(db.Tables.PRODUCT)
 
         buttons = []
         for product_id, product_sym, product_name, _, _ in products:
@@ -23,8 +23,8 @@ class SelectProduct:
                 callback_data=product_id)
             )
 
-        # users = dbwrapper.get_table(dbwrapper.Tables.TG_USERS)
-        # is_user = dbwrapper.find_in_table(users, 1, str(update.effective_user.id))
+        # users = db.get_table(db.Tables.TG_USERS)
+        # is_user = db.find_in_table(users, 1, str(update.effective_user.id))
 
         # if is_user:
         #     buttons.append(util.action_button(Action.CREATE))
@@ -43,6 +43,6 @@ class SelectProduct:
         selected_product = update.callback_query.data
         user_data = context.user_data['data']
 
-        if isinstance(user_data, dbwrapper.Entry):
+        if isinstance(user_data, db.Entry):
             user_data.product_id = selected_product
             return await warehouse.ViewEntry.ask(update, context)

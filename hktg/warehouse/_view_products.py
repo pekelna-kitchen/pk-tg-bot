@@ -6,11 +6,9 @@ import logging
 
 from hktg.constants import (
     Action,
-    UserDataKey,
     State
 )
-from hktg import dbwrapper, util, warehouse, home
-from hktg.strings import FILTERED_VIEW_TEXT, UNFILTERED_TEXT
+from hktg import db, util, warehouse, home, strings
 
 class ViewProducts:
     @staticmethod
@@ -20,41 +18,37 @@ class ViewProducts:
 
         await update.callback_query.answer()
 
-        user_data = context.user_data
-        # logging.info( user_data['data'].dict() )
-
-        # def constraint(product, location, amount, container, date, editor):
-        #     if user_data[UserDataKey.FIELD_TYPE] == UserDataKey.PRODUCT:
-        #         return product == user_data[UserDataKey.CURRENT_ID]
-        #     if user_data[UserDataKey.FIELD_TYPE] == UserDataKey.LOCATION:
-        #         return location == user_data[UserDataKey.CURRENT_ID]
-        #     logging.error("unexpected filter type to filter by")
-        #     return True
-
         buttons = []
 
-        products = dbwrapper.get_table(dbwrapper.Tables.PRODUCT)
-        # locations = dbwrapper.get_table(dbwrapper.Tables.LOCATION)
-        containers = dbwrapper.get_table(dbwrapper.Tables.CONTAINER)
-        # entries = dbwrapper.get_table(dbwrapper.Tables.ENTRIES)
+        products = db.get_table(db.Tables.PRODUCT)
+        locations = db.get_table(db.Tables.LOCATION)
+        containers = db.get_table(db.Tables.CONTAINER)
 
-        for product_id, product_sym, product_name, limit_container, limit_amount in products:
-            prod = dbwrapper.Product(product_id, product_sym, product_name, limit_container, limit_amount)
-            buttons.append([
+        for p in products:
+            prod = db.Product(*p)
+            entries = db.get_table(db.Tables.ENTRIES, {'product_id': prod.id})
+            e_desc = ''
+            for entry in entries:
+                e = db.Entry(*entry)
+                e_desc += '[ %s %s ]' % (e.amount, e.container(containers).symbol)
+                # entries_desc = ' '.join([prod.symbol, prod.name, e_desc])
+
+            buttons.append(
                 InlineKeyboardButton(
                     # TODO: message wityh desc
-                    text=" ".join([prod.symbol, prod.name, str(prod.limit_amount), prod.container_symbol(containers)]),
+                    text=" ".join([prod.symbol, prod.name, e_desc]),
                     callback_data=prod
                 ),
-            ])
+            )
 
+        buttons = util.split_list(buttons, 2)
         buttons.append([
             util.action_button(Action.CREATE),
             util.action_button(Action.HOME)])
 
         keyboard = InlineKeyboardMarkup(buttons)
 
-        await update.callback_query.edit_message_text(text=UNFILTERED_TEXT, reply_markup=keyboard)
+        await update.callback_query.edit_message_text(text=strings.UNFILTERED_TEXT, reply_markup=keyboard)
 
         return State.VIEWING_PRODUCTS
 
@@ -65,13 +59,13 @@ class ViewProducts:
 
         qdata = update.callback_query.data
     
-        if isinstance(qdata, dbwrapper.Product):
+        if isinstance(qdata, db.Product):
             context.user_data['data'] = qdata
             return await warehouse.ViewProduct.ask(update, context)
 
         if isinstance(qdata, Action):
             if qdata == Action.CREATE:
-                context.user_data['data'] = dbwrapper.Product()
+                context.user_data['data'] = db.Product()
                 return await warehouse.ViewProduct.ask(update, context)
             if qdata == Action.HOME:
                 return await home.Home.ask(update, context)
