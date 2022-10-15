@@ -19,6 +19,9 @@ class Home:
     @staticmethod
     async def ask(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
         
+        # await update.effective_message.reply_html(
+        #     f"Your chat id is <code>{update.effective_chat.id}</code>."
+        # )
         from telegram import InlineKeyboardMarkup, ReplyKeyboardMarkup
 
         user_data = util.user_data(context)
@@ -35,13 +38,15 @@ class Home:
         repo = git.Repo(search_parent_directories=True)
 
         import humanize
-        text = SHOWING_TEXT + "\n\nVersion: %s %s" % (
-            repo.active_branch.name, 
+        text = SHOWING_TEXT + "\n\nVersion: %s:%s\n%s" % (
+            repo.active_branch.name,
+            repo.head.commit.summary,
             humanize.naturaltime(repo.commit().committed_datetime.replace(tzinfo=None)),
         )
 
         buttons = [
             [ util.action_button(Action.VIEW_WAREHOUSE, {}), ],
+            [ util.action_button(Action.VIEW_PRODUCTS, {}), ],
             [ util.action_button(ConversationHandler.END, {}), ],
         ]
 
@@ -56,28 +61,28 @@ class Home:
     @staticmethod
     async def answer(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
 
-        query_data = UserData(update.callback_query.data)
+        query_data = UserData().with_obj(update.callback_query.data)
         # for key in query_data:
         #     context.user_data[key] = query_data[key]
 
         action_mapping = {
+            Action.VIEW_WAREHOUSE: callbacks.ViewWarehouse.ask,
+            Action.VIEW_PRODUCTS: callbacks.ViewProducts.ask,
             ConversationHandler.END: callbacks.Home.stop,
-            Action.CREATE: callbacks.ViewEntry.ask,
-            Action.VIEW_WAREHOUSE: callbacks.ViewWarehouse.ask
         }
 
-        return await action_mapping[query_data.action.action](update, context)
+        return await action_mapping[query_data.action](update, context)
 
     @staticmethod
     async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
-        from telegram import ReplyKeyboardRemove
+        # from telegram import ReplyKeyboardRemove
 
         util.reset_data(context)
 
         if update.callback_query:
-            await update.callback_query.edit_message_text(text=COMEBACK_TEXT, reply_markup=ReplyKeyboardRemove())
+            await update.callback_query.edit_message_text(text=COMEBACK_TEXT)
         else:
-            await update.effective_chat.send_message(text=COMEBACK_TEXT, reply_markup=ReplyKeyboardRemove())
+            await update.effective_chat.send_message(text=COMEBACK_TEXT)
 
         return ConversationHandler.END

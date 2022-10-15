@@ -13,77 +13,32 @@ class AskAmount:
     @staticmethod
     async def ask(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
 
+        from telegram import ReplyKeyboardRemove
+
         user_data = context.user_data
-        message = ""
+        message = "ask amount"
 
-        instances = dbwrapper.get_table(dbwrapper.Tables.INSTANCE)
-        products = dbwrapper.get_table(dbwrapper.Tables.PRODUCT)
-        locations = dbwrapper.get_table(dbwrapper.Tables.LOCATION)
-        containers = dbwrapper.get_table(dbwrapper.Tables.CONTAINER)
-
-        if user_data[UserDataKey.ACTION] == Action.MODIFY:
-            if user_data[UserDataKey.FIELD_TYPE] == UserDataKey.LIMIT:
-                product_name = dbwrapper.find_in_table(
-                    products, 0, user_data[UserDataKey.CURRENT_ID])
-                container_symbol = dbwrapper.find_in_table(
-                    containers, 0, user_data[UserDataKey.CONTAINER])[1]
-                message = LIMIT_MESSAGE % (product_name, container_symbol)
-
-            else:
-                instance = dbwrapper.find_in_table(
-                    instances, 0, user_data[UserDataKey.CURRENT_ID])
-                (id, product_id, location_id, amount,
-                 container, date, editor) = instance
-                product_name = dbwrapper.find_in_table(products, 0, product_id)[1]
-                location_name = dbwrapper.find_in_table(locations, 0, location_id)[1]
-                container_symbol = dbwrapper.find_in_table(
-                    containers, 0, user_data[UserDataKey.CONTAINER])[1]
-
-                message = AMOUNT_MESSAGE % (
-                    container_symbol, product_name, location_name)
-
-        elif user_data[UserDataKey.ACTION] == Action.CREATE:
-
-            product_name = dbwrapper.find_in_table(
-                products, 0, user_data[UserDataKey.CONTAINER])[1]
-            location_name = dbwrapper.find_in_table(
-                locations, 0, user_data[UserDataKey.LOCATION])[1]
-            container_symbol = dbwrapper.find_in_table(
-                containers, 0, user_data[UserDataKey.CONTAINER])[1]
-
-            message = ADD_AMOUNT_MESSAGE % (
-                container_symbol, product_name, location_name)
-
-        await update.callback_query.edit_message_text(text=message)
+        if update.callback_query:
+            await update.callback_query.edit_message_text(text=message)
+        else:
+            await update.message.reply_text(text=message)
 
         return State.ENTERING_AMOUNT
 
     @staticmethod
     async def answer(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
-        user_data = context.user_data
+        user_data = context.user_data['data']
 
         if not update.message.text.isdigit():
             return await callbacks.AskAmount.ask(update, context)
 
-        if user_data[UserDataKey.ACTION] == Action.MODIFY:
-            if user_data[UserDataKey.FIELD_TYPE] == UserDataKey.LIMIT:
-                dbwrapper.update_limit(
-                    user_data[UserDataKey.CURRENT_ID],
-                    int(update.message.text),
-                    user_data[UserDataKey.CONTAINER]
-                )
-            else:
-                dbwrapper.update_instance(
-                    user_data[UserDataKey.CURRENT_ID],
-                    update.message.text,
-                    update.effective_user.name
-                )
+        if isinstance(user_data, dbwrapper.Product):
+            user_data.limit_amount = int(update.message.text)
+            return await callbacks.ViewProduct.ask(update, context)
 
-            return await callbacks.Home.ask(update, context)
+        if isinstance(user_data, dbwrapper.Entry):
+            user_data.amount = int(update.message.text)
+            return await callbacks.ViewEntry.ask(update, context)
 
-        else:
-            logging.error("Unexpected action: %s" %
-                          user_data[UserDataKey.ACTION])
-
-        return await callbacks.Home.ask(update, context)
+        # logging.error("Unexpected action: %s" % user_data)

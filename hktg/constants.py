@@ -14,38 +14,44 @@ class State(Enum):
     ENTERING_PRODUCT = 6
     VIEWING_WAREHOUSE = 7
     CHOOSING_CONTAINER = 8
-    ENTERING_CONTAINER_SYMBOL = 9
-    ENTERING_CONTAINER_DESCRIPTION = 10
+    ENTERING_SYMBOL = 9
+    ENTERING_TEXT = 10
     VIEWING_ENTRY = 11
     VIEWING_PRODUCT = 12
+    VIEWING_PRODUCTS = 13
     END = ConversationHandler.END
 
 
 class Action(Enum):
     HOME = 1
     VIEW_WAREHOUSE = 2
-    CREATE = 3
-    DELETE = 4
-    MODIFY = 5
-    VIEW_ENTRY = 6
-    VIEW_AMOUNT = 7
-    VIEW_PRODUCT = 8
-    BACK = 9
+    VIEW_PRODUCTS = 3
+    CREATE = 4
+    DELETE = 5
+    MODIFY = 6
+    VIEW_ENTRY = 7
+    VIEW_AMOUNT = 8
+    VIEW_PRODUCT = 9
+    BACK = 10
 
     @staticmethod
     def description(action):
         descriptions = {
-            Action.HOME: "🔍 Додому",
-            Action.VIEW_WAREHOUSE: "🏠 До складу",
+            Action.HOME: "🏠 Додому",
+            Action.VIEW_WAREHOUSE: "🔍 До складу",
+            Action.VIEW_PRODUCTS: "🔍 До продуктів",
             Action.CREATE: "➕ Додати",
             Action.DELETE: "➖ Видалити",
             Action.MODIFY: "🖊️ Змінити",
-            Action.VIEW_ENTRY: "🖊️ Змінити",
-            Action.VIEW_AMOUNT: "🖊️ Змінити",
+            Action.VIEW_ENTRY: "🖊️ entry",
+            Action.VIEW_AMOUNT: "🖊️ amount",
             Action.BACK: "< Назад",
             ConversationHandler.END: "🚪 Закінчити",
         }
         return descriptions[action]
+
+    def __str__(self):
+        return self.name
 
 class UserDataKey(Enum):
     ACTION = 1
@@ -66,6 +72,8 @@ class UserData:
     location_id: int | None = None
     container_id: int | None = None
     limit_amount: int | None = None
+    text: str | None = None
+    symbol: str | None = None
 
     def dict(self):
         return {k: str(v) for k, v in dataclasses.asdict(self).items()}
@@ -74,6 +82,9 @@ class UserData:
         for key, value in new.items():
             setattr(self, key, value)
         return self
+
+    def __str__(self):
+        return self.to_dict()
 
     def with_obj(self, new: object):
         def assign_if(src, dst, key):

@@ -1,77 +1,75 @@
 
 from telegram import Update
 from telegram.ext import ContextTypes
+from dataclasses import dataclass
 
 import humanize
+from enum import Enum
 from datetime import datetime
 
 from hktg.constants import (
     Action,
-    UserDataKey,
+    UserData,
     State
 )
 from hktg import dbwrapper, util, callbacks
 from hktg.strings import ENTRY_MESSAGE
 
+def create_button(text, callback_data):
+    from telegram import InlineKeyboardButton
+    if not text:
+        text = "➕"
+    return InlineKeyboardButton(text, callback_data=callback_data)
+
+
+@dataclass
 class ViewEntry:
+
+    class FieldType(Enum):
+        Product = 1,
+        Location = 2,
+        Amount = 3,
+        Container = 4,
+
+    field_type : FieldType | None = None
 
     @staticmethod
     async def ask(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
 
         from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-        query_data = update.callback_query.data
+        # query_data = update.callback_query.data
 
-        id = product_id = amount = change_date = editor = instance = None
-        product_name = location_name = container = None
+        entry : dbwrapper.Entry = None
+        if isinstance(context.user_data['data'], dbwrapper.Entry):
+            entry = context.user_data['data']
 
-        if UserDataKey.CURRENT_ID in query_data:
-            instance = dbwrapper.find_in_table(dbwrapper.Tables.INSTANCE, 0, query_data[UserDataKey.CURRENT_ID])
-            (id, product_id, location_id, amount, container_id, change_date, editor) = instance
+        buttons = []
+        # if not product_info.id:
+        buttons.append([
+            create_button(entry.product_symbol(), ViewEntry(ViewEntry.FieldType.Product)),
+            create_button(entry.location_symbol(), ViewEntry(ViewEntry.FieldType.Location)),
+            create_button(entry.amount, ViewEntry(ViewEntry.FieldType.Amount)),
+            create_button(entry.container_symbol(), ViewEntry(ViewEntry.FieldType.Container)),
+        ])
+        # else:
+        if entry.id:
+            entries = dbwrapper.get_table(dbwrapper.Tables.ENTRIES)
+            result_entry = util.find_tuple_element(entries, {0: entry.id})
+            entry_id, product_id, location_id, amount, container_id, date, editor = result_entry
+            origin = dbwrapper.Entry(entry_id, product_id, location_id, amount, container_id, date, editor)
+            if not origin == entry:
+                buttons.append([ util.action_button(Action.MODIFY) ])
+        elif entry.is_valid():
+            buttons.append([ util.action_button(Action.CREATE) ])
 
-            product_name = dbwrapper.find_in_table(dbwrapper.Tables.PRODUCT, 0, product_id)[1]
-            location_name = dbwrapper.find_in_table(dbwrapper.Tables.LOCATION, 0, location_id)[1]
-            container = dbwrapper.find_in_table(dbwrapper.Tables.CONTAINER, 0, container_id)
 
-        if not instance:
-            if UserDataKey.PRODUCT in context.user_data:
-                product_id = dbwrapper.find_in_table(dbwrapper.Tables.PRODUCT, 0, product_id)[1]
-            if UserDataKey.PRODUCT in context.user_data:
-                location_name = dbwrapper.find_in_table(dbwrapper.Tables.PRODUCT, 0, product_id)[1]
-
-        product_name = dbwrapper.find_in_table(dbwrapper.Tables.PRODUCT, 0, product_id)[1] if product_id else None
-
-        amount_tuple = (amount, container[1] if container else None)
-
-        buttons = [[
-            InlineKeyboardButton(
-                text="%s %s" % amount_tuple if amount else "ADD",
-                callback_data={
-                    UserDataKey.ACTION: Action.MODIFY,
-                    UserDataKey.FIELD_TYPE: UserDataKey.AMOUNT
-                }
-            ),
-            InlineKeyboardButton(
-                text=product_name,
-                callback_data={
-                    UserDataKey.ACTION: Action.VIEW_ENTRY if id else Action.CREATE,
-                    UserDataKey.FIELD_TYPE: UserDataKey.PRODUCT
-                }
-            ),
-            InlineKeyboardButton(
-                text=location_name,
-                callback_data={
-                    UserDataKey.ACTION: Action.MODIFY,
-                    UserDataKey.FIELD_TYPE: UserDataKey.LOCATION
-                }
-            ),
-        ]]
         buttons.append([
             util.action_button(Action.BACK),
         ])
         keyboard = InlineKeyboardMarkup(buttons)
 
-        editor_tuple = (editor, humanize.naturaltime(change_date.replace(tzinfo=None))) if editor else ('ніхто', 'ніколи')
+        editor_tuple = (entry.editor, humanize.naturaltime(entry.date.replace(tzinfo=None))) if entry.editor else ('ніхто', 'ніколи')
 
         if update.callback_query:
             await update.callback_query.edit_message_text(text=ENTRY_MESSAGE % editor_tuple, reply_markup=keyboard)
@@ -86,29 +84,42 @@ class ViewEntry:
         await update.callback_query.answer()
 
         query_data = update.callback_query.data
-        user_data = context.user_data
+        user_data = context.user_data['data']
 
-        if user_data[UserDataKey.ACTION] == Action.BACK:
-            return ConversationHandler.END
+        if isinstance(query_data, UserData):
+            if query_data.action == Action.BACK:
+                return await callbacks.ViewWarehouse.ask(update, context)
 
-        async def create(u, c):
-            dbwrapper.update_instance(None, update.effective_user.name, {
-                "product_id": user_data[UserDataKey.PRODUCT],
-                "location_id": user_data[UserDataKey.LOCATION],
-                "container_id": user_data[UserDataKey.CONTAINER],
-                "amount": update.message.text,
-            })
-            util.reset_data(context)
+            entry_data : dbwrapper.Entry = context.user_data['data']
+            datadict = entry_data.to_sql()
+
+            if query_data.action == Action.MODIFY:
+                dbwrapper.update_entry(user_data.id, update.effective_user.name, datadict)
+            if query_data.action == Action.CREATE:
+                dbwrapper.insert_value(dbwrapper.Tables.ENTRIES, datadict)
+
+            del context.user_data['data']
             return await callbacks.ViewWarehouse.ask(update, context)
 
-        # query_data = update.callback_query.data
-        # for key in query_data:
-        #     context.user_data[key] = query_data[key]
+        # if user_data[UserDataKey.ACTION] == Action.BACK:
+        #     return ConversationHandler.END
 
-        mappings = {
-            Action.CREATE: create,
-            # Action.VIEW_WAREHOUSE: callbacks.ViewWarehouse.ask,
-            Action.MODIFY: callbacks.ViewAmount.ask
-        }
+        # async def create(u, c):
+        #     dbwrapper.update_entry(None, update.effective_user.name, {
+        #         "product_id": user_data[UserDataKey.PRODUCT],
+        #         "location_id": user_data[UserDataKey.LOCATION],
+        #         "container_id": user_data[UserDataKey.CONTAINER],
+        #         "amount": update.message.text,
+        #     })
+        #     util.reset_data(context)
+        #     return await callbacks.ViewWarehouse.ask(update, context)
 
-        return await mappings[ query_data[ UserDataKey.ACTION ] ](update, context)
+        if isinstance(query_data, ViewEntry):
+            if query_data.field_type == ViewEntry.FieldType.Product:
+                return await callbacks.SelectProduct.ask(update, context)
+            if query_data.field_type == ViewEntry.FieldType.Location:
+                return await callbacks.SelectLocation.ask(update, context)
+            if query_data.field_type == ViewEntry.FieldType.Amount:
+                return await callbacks.AskAmount.ask(update, context)
+            if query_data.field_type == ViewEntry.FieldType.Container:
+                return await callbacks.SelectContainer.ask(update, context)

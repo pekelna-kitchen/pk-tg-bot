@@ -19,3 +19,10 @@ su - piku
 
 https://github.com/{YOUR_ACCOUNT}/telegram-bot/settings/actions/runners
 ```
+
+
+### init db
+
+```bash
+yoyo apply --database <DB_URL> ./migrations
+```
