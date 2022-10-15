@@ -5,7 +5,6 @@ from telegram.ext import ContextTypes
 from hktg.constants import (
     Action,
     State,
-    UserDataKey
 )
 from hktg import dbwrapper, util, warehouse
 
@@ -45,10 +44,3 @@ class SelectContainer:
         if isinstance(user_data, dbwrapper.Entry):
             user_data.container_id = selected_container
             return await warehouse.ViewEntry.ask(update, context)
-
-        # if isentry(selected_container, dict):
-        #     return await warehouse.AskSymbol.ask(update, context)
-
-        # if context.user_data[UserDataKey.ACTION] in (Action.CREATE, Action.MODIFY):
-        #     context.user_data[UserDataKey.CONTAINER] = selected_container
-        #     return await warehouse.AskAmount.ask(update, context)

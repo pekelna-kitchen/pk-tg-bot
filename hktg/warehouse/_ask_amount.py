@@ -5,7 +5,6 @@ from telegram.ext import ContextTypes
 from hktg.constants import (
     Action,
     State,
-    UserDataKey
 )
 from hktg import dbwrapper, warehouse
 

@@ -22,15 +22,7 @@ def create_button(text, callback_data):
 
 
 @dataclass
-class ViewEntry:
-
-    class FieldType(Enum):
-        Product = 1,
-        Location = 2,
-        Amount = 3,
-        Container = 4,
-
-    field_type : FieldType | None = None
+class ViewMap:
 
     @staticmethod
     async def ask(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
@@ -50,6 +42,7 @@ class ViewEntry:
 
         text = "Vodii"
         if update.callback_query:
+            # await update.callback_query.edit_message_media(media=)
             await update.callback_query.edit_message_text(text, reply_markup=keyboard)
         else:
             await update.message.reply_text(text=text, reply_markup=keyboard)

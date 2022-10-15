@@ -1,4 +1,6 @@
 
+import os
+
 from telegram import Update
 from telegram.ext import (
     ContextTypes,
@@ -7,13 +9,13 @@ from telegram.ext import (
 
 from hktg.constants import (
     Action,
-    UserData,
-    UserDataKey,
     State
 )
-from hktg import dbwrapper, util, warehouse
+from hktg import dbwrapper, util, warehouse, strings
 
 from hktg.strings import SHOWING_TEXT, COMEBACK_TEXT
+
+DEVELOPER_CHAT_ID=os.environ.get('DEVELOPER_CHAT_ID')
 
 class Home:
     @staticmethod
@@ -24,9 +26,8 @@ class Home:
         # )
         from telegram import InlineKeyboardMarkup, ReplyKeyboardMarkup
 
-        user_data = util.user_data(context)
-        util.reset_data(context)
-
+        if 'data' in context.user_data:
+            del context.user_data['data']
         # users = dbwrapper.get_table(dbwrapper.Tables.TG_USERS)
         # admins = dbwrapper.get_table(dbwrapper.Tables.TG_ADMINS)
         # locations = dbwrapper.get_table(dbwrapper.Tables.LOCATION)
@@ -34,20 +35,19 @@ class Home:
         # is_user = dbwrapper.find_in_table(dbwrapper.Tables.TG_USERS, 1, str(update.effective_user.id))
         # is_admin = is_user and dbwrapper.find_in_table(dbwrapper.Tables.TG_ADMINS, 1, is_user[0])
 
-        import git
-        repo = git.Repo(search_parent_directories=True)
+        # import git
+        # repo = git.Repo(search_parent_directories=True)
 
-        import humanize
-        text = SHOWING_TEXT + "\n\nVersion: %s:%s\n%s" % (
-            repo.active_branch.name,
-            repo.head.commit.summary,
-            humanize.naturaltime(repo.commit().committed_datetime.replace(tzinfo=None)),
-        )
+        # import humanize
+        text = strings.SHOWING_TEXT # + "\n\nVersion: %s:%s\n%s" % (
+        #     repo.active_branch.name,
+        #     repo.head.commit.summary,
+        #     humanize.naturaltime(repo.commit().committed_datetime.replace(tzinfo=None)),
+        # )
 
         buttons = [
-            [ util.action_button(Action.VIEW_WAREHOUSE, {}), ],
-            [ util.action_button(Action.VIEW_PRODUCTS, {}), ],
-            [ util.action_button(ConversationHandler.END, {}), ],
+            [ util.action_button(Action.VIEW_PRODUCTS), ],
+            [ util.action_button(ConversationHandler.END), ],
         ]
 
         keyboard = InlineKeyboardMarkup(buttons)
@@ -61,27 +61,63 @@ class Home:
     @staticmethod
     async def answer(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
 
-        query_data = UserData().with_obj(update.callback_query.data)
-        # for key in query_data:
-        #     context.user_data[key] = query_data[key]
+        query_data = update.callback_query.data
 
         action_mapping = {
             Action.VIEW_PRODUCTS: warehouse.ViewProducts.ask,
-            ConversationHandler.END: home.Home.stop,
+            ConversationHandler.END: Home.stop,
         }
 
-        return await action_mapping[query_data.action](update, context)
+        return await action_mapping[query_data](update, context)
 
     @staticmethod
     async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
         # from telegram import ReplyKeyboardRemove
 
-        util.reset_data(context)
+        if 'data' in context.user_data:
+            del context.user_data['data']
+
+        message = strings.COMEBACK_TEXT
 
         if update.callback_query:
-            await update.callback_query.edit_message_text(text=COMEBACK_TEXT)
+            await update.callback_query.edit_message_text(text=message)
         else:
-            await update.effective_chat.send_message(text=COMEBACK_TEXT)
+            await update.effective_chat.send_message(text=message)
 
         return ConversationHandler.END
+
+    @staticmethod
+    async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
+
+        import html
+        import json
+        import logging
+        import traceback
+
+        from telegram.constants import ParseMode
+
+        logging.error(msg="Exception while handling an update:", exc_info=context.error)
+
+        # traceback.format_exception returns the usual python message about an exception, but as a
+        # list of strings rather than a single string, so we have to join them together.
+        tb_list = traceback.format_exception(None, context.error, context.error.__traceback__, limit=5, chain=False)
+        tb_string = "\n".join(tb_list)
+
+        # Build the message with some markup and additional information about what happened.
+        # You might need to add some logic to deal with messages longer than the 4096 character limit.
+        update_str = json.dumps(update.to_dict(), cls=util.EnhancedJSONEncoder, indent=2, ensure_ascii=False) if isinstance(update, Update) else update.__class__.__name__
+        # str(update)
+        message = (
+            f"An exception was raised while handling an update\n"
+            f"<pre>update = {html.escape(str(update_str))}"
+            "</pre>\n\n"
+            f"<pre>context.chat_data = {html.escape(str(context.chat_data))}</pre>\n\n"
+            f"<pre>context.user_data = {html.escape(str(context.user_data))}</pre>\n\n"
+            f"<pre>{html.escape(tb_string)}</pre>"
+        )
+
+        # Finally, send the message
+        await context.bot.send_message(
+            chat_id=DEVELOPER_CHAT_ID, text=message, parse_mode=ParseMode.HTML
+        )

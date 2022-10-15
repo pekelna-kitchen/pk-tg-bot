@@ -3,12 +3,10 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from hktg.constants import UserDataKey
 from hktg import dbwrapper, warehouse, strings
 from hktg.constants import (
     Action,
-    State,
-    UserDataKey
+    State
 )
 
 class AskSymbol:

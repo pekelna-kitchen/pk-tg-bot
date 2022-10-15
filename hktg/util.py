@@ -7,10 +7,7 @@ from telegram import (
 )
 from telegram.ext import ContextTypes
 
-from .constants import (
-    UserData,
-    Action,
-)
+from .constants import Action
 
 class EnhancedJSONEncoder(json.JSONEncoder):
     def default(self, o):
@@ -32,26 +29,12 @@ def split_list(source: list, count: int):
         result.append(source[i:i+count])
     return result
 
-def reset_data(context: ContextTypes.DEFAULT_TYPE):
-    if 'data' in context.user_data:
-        del context.user_data['data']
-    context.user_data['data'] = UserData()
 
-def user_data(context: ContextTypes.DEFAULT_TYPE):
-    if 'data' not in context.user_data:
-        reset_data(context)
-
-    return UserData(context.user_data['data'])
-
-
-def action_button(action: Action, callback_data={}):
+def action_button(action: Action):
 
     from telegram import InlineKeyboardButton
- 
-    if isinstance(callback_data, dict):
-        callback_data = UserData(action=action).with_dict(callback_data)
 
-    return InlineKeyboardButton(text=Action.description(action), callback_data=callback_data)
+    return InlineKeyboardButton(text=Action.description(action), callback_data=action)
 
 
 # 

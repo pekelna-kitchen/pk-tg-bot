@@ -12,14 +12,12 @@ class State(Enum):
     ENTERING_AMOUNT = 4
     ENTERING_LOCATION = 5
     ENTERING_PRODUCT = 6
-    VIEWING_WAREHOUSE = 7
+    VIEWING_PRODUCTS = 7
     CHOOSING_CONTAINER = 8
     ENTERING_SYMBOL = 9
     ENTERING_TEXT = 10
     VIEWING_ENTRY = 11
     VIEWING_PRODUCT = 12
-    VIEWING_PRODUCTS = 13
-    END = ConversationHandler.END
 
 
 class Action(Enum):
@@ -28,7 +26,8 @@ class Action(Enum):
     VIEW_PRODUCTS = 3
     CREATE = 4
     DELETE = 5
-    MODIFY = 6
+    SAVE = 6
+    END = ConversationHandler.END
 
     @staticmethod
     def description(action):
@@ -38,7 +37,7 @@ class Action(Enum):
             Action.VIEW_PRODUCTS: "🔍 До складу",
             Action.CREATE: "➕ Додати",
             Action.DELETE: "➖ Видалити",
-            Action.MODIFY: "🖊️ Змінити",
+            Action.SAVE: "🖊️ Зберегти",
             ConversationHandler.END: "🚪 Закінчити",
         }
         return descriptions[action]
@@ -56,34 +55,3 @@ class UserDataKey(Enum):
     FIELD_TYPE = 7
     LIMIT = 8
     CURRENT_ID = 9
-
-@dataclass
-class UserData:
-    action: Action | None = None
-    entry_id: int | None = None
-    product_id: int | None = None
-    location_id: int | None = None
-    container_id: int | None = None
-    limit_amount: int | None = None
-    text: str | None = None
-    symbol: str | None = None
-
-    def dict(self):
-        return {k: str(v) for k, v in dataclasses.asdict(self).items()}
-
-    def with_dict(self, new: dict):
-        for key, value in new.items():
-            setattr(self, key, value)
-        return self
-
-    def __str__(self):
-        return self.to_dict()
-
-    def with_obj(self, new: object):
-        def assign_if(src, dst, key):
-            setattr(self, key, value)
-        for f in dataclasses.fields(self):
-            value = getattr(new, f.name)
-            if value:
-                setattr(self, f.name, value)
-        return self

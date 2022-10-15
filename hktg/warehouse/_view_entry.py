@@ -9,7 +9,6 @@ from datetime import datetime
 
 from hktg.constants import (
     Action,
-    UserData,
     State
 )
 from hktg import dbwrapper, util, warehouse
@@ -54,12 +53,12 @@ class ViewEntry:
         ])
         # else:
         if entry.id:
-            entries = dbwrapper.get_table(dbwrapper.Tables.ENTRIES)
+            entries = dbwrapper.get_table(dbwrapper.Tables.ENTRIES, {'id': entry.id})
             result_entry = util.find_tuple_element(entries, {0: entry.id})
             entry_id, product_id, location_id, amount, container_id, date, editor = result_entry
             origin = dbwrapper.Entry(entry_id, product_id, location_id, amount, container_id, date, editor)
             if not origin == entry:
-                buttons.append([ util.action_button(Action.MODIFY) ])
+                buttons.append([ util.action_button(Action.SAVE) ])
         elif entry.is_valid():
             buttons.append([ util.action_button(Action.CREATE) ])
 
@@ -84,26 +83,34 @@ class ViewEntry:
         await update.callback_query.answer()
 
         query_data = update.callback_query.data
-        user_data = context.user_data['data']
 
-        if isinstance(query_data, UserData):
-            if query_data.action == Action.BACK:
-                entry = dbwrapper.Entry()
-                if isinstance(context.user_data['data'], dbwrapper.Entry):
-                    entry = context.user_data['data']
-                user_data['data'] = dbwrapper.Product(entry.product_id)
+        if isinstance(query_data, Action):
+            entry : dbwrapper.Entry = context.user_data['data']
+            if query_data == Action.BACK:
+                products = dbwrapper.get_table(dbwrapper.Tables.PRODUCT, {'id': product_info.id})
+                context.user_data['data'] = dbwrapper.Product(*products[0])
                 return await warehouse.ViewProduct.ask(update, context)
 
-            entry_data : dbwrapper.Entry = context.user_data['data']
-            datadict = entry_data.to_sql()
+            entry.editor = update.effective_user.name
+            entry.date = datetime.now()
 
-            if query_data.action == Action.MODIFY:
-                dbwrapper.update_entry(user_data.id, update.effective_user.name, datadict)
-            if query_data.action == Action.CREATE:
+            entry_id = entry.id
+            entry.id = None
+
+            datadict = entry.to_sql()
+
+            if query_data == Action.SAVE:
+                dbwrapper.update_value(
+                    dbwrapper.Tables.ENTRIES,
+                    datadict,
+                    {'id': entry_id}
+                )
+
+            if query_data == Action.CREATE:
                 dbwrapper.insert_value(dbwrapper.Tables.ENTRIES, datadict)
 
-            context.user_data['data'] = dbwrapper.Product(entry_data.product_id)
-            return await warehouse.ViewProduct.ask(update, context)
+            # context.user_data['data'] = dbwrapper.Product(entry_data.product_id)
+            # return await warehouse.ViewProduct.ask(update, context)
 
         if isinstance(query_data, ViewEntry):
             if query_data.field_type == ViewEntry.FieldType.Product:

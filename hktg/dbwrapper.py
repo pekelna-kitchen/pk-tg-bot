@@ -82,29 +82,6 @@ def find_in_table(table_name, index, comparable):
     table = get_table(table_name)
     return next((x for x in table if x[index] == comparable), None)
 
-def update_limit(product_id, amount, container_id):
-    limits = get_table(LIMIT)
-    limit = next((x for x in limits if x[0] == product_id), None)
-
-    if not amount:
-        delete_value(
-            LIMIT, {'product': user_data[UserDataKey.CURRENT_ID]})
-    elif limit:
-        update_value(LIMIT,
-                     {
-                         'amount': amount,
-                         "container_id": container_id,
-                         "product_id": product_id
-                     },
-                     {'id': limit[0]}
-                     )
-    else:
-        insert_value(LIMIT, {
-            'amount': amount,
-            "container_id": container_id,
-            "product_id": product_id
-        },)
-
 
 def update_entry(id, user_name, data):
 
@@ -146,6 +123,7 @@ class Product:
 
     def is_valid(self):
         return self.symbol and self.name and self.limit_container and self.limit_amount
+
 
     def to_sql(self):
         return {
