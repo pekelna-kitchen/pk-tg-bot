@@ -11,7 +11,13 @@ from hktg.constants import (
     Action,
     State
 )
-from hktg import util, warehouse, driver, strings
+from hktg import (
+    util,
+    strings,
+    driver,
+    warehouse,
+    users
+)
 
 
 DEVELOPER_CHAT_ID=os.environ.get('DEVELOPER_CHAT_ID')
@@ -48,6 +54,7 @@ class Home:
         buttons = [
             [ util.action_button(Action.VIEW_MAP), ],
             [ util.action_button(Action.VIEW_PRODUCTS), ],
+            [ util.action_button(Action.VIEW_USERS), ],
             [ util.action_button(ConversationHandler.END), ],
         ]
 
@@ -67,6 +74,7 @@ class Home:
         action_mapping = {
             Action.VIEW_PRODUCTS: warehouse.ViewProducts.ask,
             Action.VIEW_MAP: driver.ViewMap.ask,
+            Action.VIEW_USERS: users.ViewUsers.ask,
             ConversationHandler.END: Home.stop,
         }
 

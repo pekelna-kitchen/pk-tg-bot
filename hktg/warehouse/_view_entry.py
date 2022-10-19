@@ -107,6 +107,10 @@ class ViewEntry:
                     datadict,
                     {'id': entry_id}
                 )
+                products = db.get_table(db.Tables.PRODUCT, {'id': entry.product_id})
+                p = db.Product(*products[0])
+                context.user_data['data'] = p
+                return await warehouse.ViewProduct.ask(update, context)
 
             if query_data == Action.CREATE:
                 db.insert_value(db.Tables.ENTRIES, datadict)

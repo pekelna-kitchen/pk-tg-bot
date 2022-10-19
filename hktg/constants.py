@@ -18,17 +18,20 @@ class State(Enum):
     ENTERING_TEXT = 10
     VIEWING_ENTRY = 11
     VIEWING_PRODUCT = 12
-    VIEWING_MAP = 13
+    VIEWING_USERS = 13
+    VIEWING_MAP = 14
+    VIEWING_USER = 15
 
 
 class Action(Enum):
     HOME = 1
     BACK = 2
-    VIEW_PRODUCTS = 3
-    VIEW_MAP = 4
-    CREATE = 5
-    DELETE = 6
-    SAVE = 7
+    CREATE = 3
+    DELETE = 4
+    SAVE = 5
+    VIEW_PRODUCTS = 6
+    VIEW_MAP = 7
+    VIEW_USERS = 8
     END = ConversationHandler.END
 
     @staticmethod
@@ -36,11 +39,12 @@ class Action(Enum):
         descriptions = {
             Action.HOME: "🏠 Додому",
             Action.BACK: "< Назад",
-            Action.VIEW_PRODUCTS: "🔍 До складу",
-            Action.VIEW_MAP: "🛞 До водіїв",
             Action.CREATE: "➕ Створити",
             Action.DELETE: "➖ Видалити",
             Action.SAVE: "🖊️ Зберегти",
+            Action.VIEW_PRODUCTS: "🔍 До складу",
+            Action.VIEW_MAP: "🛞 До водіїв",
+            Action.VIEW_USERS: "🧰 До користувачів",
             ConversationHandler.END: "🚪 Закінчити",
         }
         return descriptions[action]

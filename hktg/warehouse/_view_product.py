@@ -135,7 +135,7 @@ class ViewProduct:
             if query_data.field_type == ViewProduct.FieldType.Symbol:
                 return await warehouse.AskSymbol.ask(update, context)
             if query_data.field_type == ViewProduct.FieldType.Text:
-                return await warehouse.AskText.ask(update, context)
+                return await common.AskText.ask(update, context)
             if query_data.field_type == ViewProduct.FieldType.LimitAmount:
                 return await warehouse.AskAmount.ask(update, context)
             if query_data.field_type == ViewProduct.FieldType.LimitContainerID:

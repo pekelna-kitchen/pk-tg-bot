@@ -4,6 +4,9 @@ yoyo-migrations
 
 humanize
 gitpython
+folium
+geopy
+html2image
 
 python-telegram-bot>=20.0a0
 

@@ -4,7 +4,6 @@ from ._select_container import SelectContainer
 from ._select_product import SelectProduct
 from ._select_location import SelectLocation
 from ._ask_symbol import AskSymbol
-from ._ask_text import AskText
 from ._ask_amount import AskAmount
 from ._view_product import ViewProduct
 from ._view_products import ViewProducts
@@ -21,7 +20,7 @@ from telegram.ext import (
 def get_handler():
 
     from hktg.constants import State
-    from hktg import home
+    from hktg import home, common
 
     entry_handler = ConversationHandler(
         entry_points=[CallbackQueryHandler(ViewEntry.ask)],
@@ -34,7 +33,7 @@ def get_handler():
             State.CHOOSING_CONTAINER: [CallbackQueryHandler(SelectContainer.answer)],
             State.ENTERING_AMOUNT: [MessageHandler(filters.TEXT, AskAmount.answer)],
             State.ENTERING_SYMBOL: [MessageHandler(filters.TEXT & ~filters.COMMAND, AskSymbol.answer)],
-            State.ENTERING_TEXT: [MessageHandler(filters.TEXT & ~filters.COMMAND, AskText.answer)],
+            State.ENTERING_TEXT: [MessageHandler(filters.TEXT & ~filters.COMMAND, common.AskText.answer)],
         },
         fallbacks=[
             CallbackQueryHandler(home.Home.ask),
@@ -59,7 +58,7 @@ def get_handler():
             State.CHOOSING_CONTAINER: [CallbackQueryHandler(SelectContainer.answer)],
             State.ENTERING_AMOUNT: [MessageHandler(filters.TEXT, AskAmount.answer)],
             State.ENTERING_SYMBOL: [MessageHandler(filters.TEXT & ~filters.COMMAND, AskSymbol.answer)],
-            State.ENTERING_TEXT: [MessageHandler(filters.TEXT & ~filters.COMMAND, AskText.answer)],
+            State.ENTERING_TEXT: [MessageHandler(filters.TEXT & ~filters.COMMAND, common.AskText.answer)],
         },
         fallbacks=[
             CallbackQueryHandler(home.Home.ask),

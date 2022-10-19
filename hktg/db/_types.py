@@ -9,9 +9,16 @@ class Tables:
     ENTRIES = 'entries'
     PRODUCT = 'products'
     CONTAINER = 'containers'
-    TG_USERS = 'tg_users'
-    TG_ADMINS = 'tg_admins'
-    TG_REQUESTS = 'tg_requests'
+
+    ROLES = 'roles'
+    USERS = 'users'
+    PROMOTIONS = 'promotions'
+
+    DISTRICTS = 'districts'
+    COORDS = 'coords'
+    CIVILS = 'civils'
+
+# WAREHOUSE TYPES
 
 @dataclass()
 class Product:
@@ -27,16 +34,7 @@ class Product:
 
 
     def container(self, containers = None):
-
-        if not self.limit_container:
-            return None
-        if containers:
-            c =  _find_tuple_element(containers, {0: self.limit_container})
-            return Container(*c)
-
-        from ._postgresql import get_table
-        containers = get_table(Tables.CONTAINER, {'id': self.limit_container})
-        return Container(*containers[0])
+        return _get_by_foreign_key(self.limit_container, Tables.CONTAINER, Container, containers)
 
     def is_valid(self):
         return self.symbol and self.name and self.limit_container and self.limit_amount
@@ -110,41 +108,75 @@ class Entry:
         }
 
     def container(self, containers = None):
-
-        if not self.container_id:
-            return None
-
-        if containers:
-            c = _find_tuple_element(containers, {0: self.container_id})
-            return Container(*c)
-
-        from ._postgresql import get_table
-        containers = get_table(Tables.CONTAINER, {'id': self.container_id})
-        return Container(*containers[0])
+        return _get_by_foreign_key(self.container_id, Tables.CONTAINER, Container, containers)
 
     def product(self, products = None) -> Product | None:
-        if not self.product_id:
-            return None
-
-        if products:
-            pr = _find_tuple_element(products, {0: self.product_id})
-            return Product(*pr)
-
-        from ._postgresql import get_table
-        products = get_table(Tables.PRODUCT, {'id': self.product_id})
-        return Product(*products[0])
+        return _get_by_foreign_key(self.product_id, Tables.PRODUCT, Product, products)
 
     def location(self, locations = None):
-        if not self.location_id:
-            return None
+        return _get_by_foreign_key(self.location_id, Tables.LOCATION, Location, locations)
 
-        if locations:
-            loc = _find_tuple_element(locations, {0: self.location_id})
-            return Location(*loc)
+# USER MANAGEMENT TYPES
 
-        from ._postgresql import get_table
-        locations = get_table(Tables.LOCATION, {'id': self.location_id})
-        return Location(*locations[0])
+@dataclass
+class Role:
+    id: Optional[int] = None
+    name: Optional[str] = None
+
+@dataclass
+class User:
+    id: Optional[int] = None
+    name: Optional[str] = None
+    tg_id: Optional[str] = None
+    viber_id: Optional[str] = None
+    phone: Optional[str] = None
+
+    def is_valid(self):
+        return self.name and ( self.tg_id or self.viber_id or self.phone )
+
+    def to_sql(self):
+        return {
+            "name": self.name,
+            "tg_id": self.tg_id,
+            "viber_id": self.viber_id,
+            "phone": self.phone,
+        }
+
+@dataclass
+class Promotion:
+    id: Optional[int] = None
+    users_id: Optional[int] = None
+    role_id: Optional[int] = None
+    date: Optional[str] = None
+    promoter: Optional[int] = None
+
+# DRIVER TYPES
+
+@dataclass
+class District:
+    id: Optional[int] = None
+    name: Optional[str] = None
+
+@dataclass
+class Coord:
+    id: Optional[int] = None
+    longitude: Optional[str] = None
+    latitude: Optional[str] = None
+
+@dataclass
+class Civil:
+    id: Optional[int] = None
+    district_id: Optional[int] = None
+    address: Optional[str] = None
+    phone_number: Optional[str] = None
+    notes: Optional[str] = None
+    coords_id: Optional[int] = None
+
+    def coords(self, coords = None):
+        return _get_by_foreign_key(self.coords_id, Tables.COORDS, Coord, coords)
+
+    def district(self, districts = None):
+        return _get_by_foreign_key(self.district_id, Tables.DISTRICTS, District, districts)
 
 # utilities
 
@@ -156,3 +188,15 @@ def _find_tuple_element(tuples, comparables: dict):
         return True
 
     return next((x for x in tuples if check_tuple_elem(x)), None)
+
+def _get_by_foreign_key(fkey, table_name, type_of, collection, key = 'id' ):
+    if not fkey:
+        return None
+
+    if collection:
+        c = _find_tuple_element(collection, {0: fkey})
+        return type_of(*c)
+
+    from ._postgresql import get_table
+    tuples_list = get_table(table_name, {key: fkey})
+    return type_of(*tuples_list[0])

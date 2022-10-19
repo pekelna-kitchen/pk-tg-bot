@@ -48,7 +48,7 @@ class ViewProducts:
 
         keyboard = InlineKeyboardMarkup(buttons)
 
-        await update.callback_query.edit_message_text(text=strings.UNFILTERED_TEXT, reply_markup=keyboard)
+        await update.callback_query.edit_message_text(text=strings.WAREHOUSE_TEXT, reply_markup=keyboard)
 
         return State.VIEWING_PRODUCTS
 

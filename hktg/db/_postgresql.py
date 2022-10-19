@@ -13,8 +13,11 @@ _CONNECTION = psycopg2.connect(_DATABASE_URL)
 def _join_dict(table: dict, separator:str=', '):
     result = []
     for k in table:
-        value = "'%s'" % table[k] if isinstance(table[k], str) else str(table[k])
-        result.append("%s=%s" % (k, value))
+        if table[k]:
+            value = "'%s'" % table[k] if isinstance(table[k], str) else str(table[k])
+            result.append("%s=%s" % (k, value))
+        else:
+            logging.debug('empty value %s' % k)
     return separator.join(result)
 
 
