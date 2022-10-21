@@ -13,7 +13,6 @@ from hktg.constants import (
 )
 from hktg import (
     util,
-    strings,
     driver,
     warehouse,
     users,
@@ -22,6 +21,16 @@ from hktg import (
 
 
 DEVELOPER_CHAT_ID=os.environ.get('DEVELOPER_CHAT_ID')
+
+
+_COMEBACK_TEXT = '''😔 Ну ти, цей... повертайся ще. 
+
+PS Для цього використай /start'''
+
+_SHOWING_TEXT = '''🏠 Ласкаво прошу до 🌶️Пекельної 🧑‍🍳Кухні!
+
+😏 Що бажаємо?'''
+
 
 
 class Home:
@@ -48,21 +57,23 @@ class Home:
         # repo = git.Repo(search_parent_directories=True)
 
         # import humanize
-        text = strings.SHOWING_TEXT # + "\n\nVersion: %s:%s\n%s" % (
+        text = _SHOWING_TEXT # + "\n\nVersion: %s:%s\n%s" % (
         #     repo.active_branch.name,
         #     repo.head.commit.summary,
         #     humanize.naturaltime(repo.commit().committed_datetime.replace(tzinfo=None)),
         # )
 
         buttons = []
+        admin = [x for x in roles if x.name == 'admin']
+
         driver = [x for x in roles if x.name == 'driver']
-        if driver:
+        if driver or admin:
             buttons.append([ util.action_button(Action.VIEW_MAP), ])
 
         warehouse = [x for x in roles if x.name == 'warehouse']
-        if warehouse:
+        if warehouse or admin:
             buttons.append([ util.action_button(Action.VIEW_PRODUCTS), ])
-        admin = [x for x in roles if x.name == 'admin']
+
         if admin:
             buttons.append([ util.action_button(Action.VIEW_USERS), ])
 
@@ -98,7 +109,7 @@ class Home:
         if 'data' in context.user_data:
             del context.user_data['data']
 
-        message = strings.COMEBACK_TEXT
+        message = _COMEBACK_TEXT
 
         if update.callback_query:
             await update.callback_query.edit_message_text(text=message)

@@ -1,6 +1,7 @@
 
 from ._view_users import ViewUsers
 from ._view_user import ViewUser
+from ._view_promotion import ViewPromotion
 
 
 from telegram.ext import (

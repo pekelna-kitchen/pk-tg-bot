@@ -11,8 +11,11 @@ from hktg.constants import (
     Action,
     State
 )
-from hktg import db, util, warehouse, strings
+from hktg import db, util, warehouse
 
+_ENTRY_MESSAGE = '''Востаннє це тут бачив
+%s
+Коли: %s'''
 
 @dataclass
 class ViewEntry:
@@ -69,7 +72,7 @@ class ViewEntry:
         if entry.editor and entry.date:
             editor_tuple = (entry.editor, humanize.naturaltime(entry.date.replace(tzinfo=None)))
 
-        message = strings.ENTRY_MESSAGE % editor_tuple
+        message = _ENTRY_MESSAGE % editor_tuple
 
         if update.callback_query:
             await update.callback_query.edit_message_text(text=message, reply_markup=keyboard)

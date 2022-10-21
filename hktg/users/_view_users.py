@@ -8,7 +8,9 @@ from hktg.constants import (
     Action,
     State
 )
-from hktg import db, util, home, strings, users
+from hktg import db, util, home, users
+
+_USERS_TEXT = "✔️ Ось хто в нас є:"
 
 class ViewUsers:
     @staticmethod
@@ -39,7 +41,7 @@ class ViewUsers:
 
         keyboard = InlineKeyboardMarkup(buttons)
 
-        await update.callback_query.edit_message_text(text=strings.USERS_TEXT, reply_markup=keyboard)
+        await update.callback_query.edit_message_text(text=_USERS_TEXT, reply_markup=keyboard)
 
         return State.VIEWING_USERS
 

@@ -8,7 +8,9 @@ from hktg.constants import (
     Action,
     State
 )
-from hktg import db, util, warehouse, home, strings
+from hktg import db, util, warehouse, home
+
+_WAREHOUSE_TEXT = "✔️ Ось що в нас є:"
 
 class ViewProducts:
     @staticmethod
@@ -48,7 +50,7 @@ class ViewProducts:
 
         keyboard = InlineKeyboardMarkup(buttons)
 
-        await update.callback_query.edit_message_text(text=strings.WAREHOUSE_TEXT, reply_markup=keyboard)
+        await update.callback_query.edit_message_text(text=_WAREHOUSE_TEXT, reply_markup=keyboard)
 
         return State.VIEWING_PRODUCTS
 

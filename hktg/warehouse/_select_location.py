@@ -7,7 +7,8 @@ from hktg.constants import (
     State,
 )
 from hktg import db, util, warehouse
-from hktg.strings import SELECT_LOCATION_TEXT
+
+_SELECT_LOCATION_TEXT = "📍 Виберіть локацію:"
 
 class SelectLocation:
     @staticmethod
@@ -32,7 +33,7 @@ class SelectLocation:
         keyboard = InlineKeyboardMarkup(buttons)
 
         # await update.callback_query.answer()
-        await update.callback_query.edit_message_text(text=SELECT_LOCATION_TEXT, reply_markup=keyboard)
+        await update.callback_query.edit_message_text(text=_SELECT_LOCATION_TEXT, reply_markup=keyboard)
 
         return State.CHOOSING_LOCATION
 

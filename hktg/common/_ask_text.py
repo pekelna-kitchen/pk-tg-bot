@@ -3,7 +3,9 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 from hktg.constants import State
-from hktg import db, strings, warehouse, users
+from hktg import db, warehouse, users
+
+_NAME_TEXT = "Введіть текст:"
 
 class AskText:
     @staticmethod
@@ -11,7 +13,7 @@ class AskText:
 
         user_data = context.user_data['data']
 
-        message = strings.NAME_TEXT
+        message = _NAME_TEXT
 
         if update.callback_query:
             await update.callback_query.edit_message_text(text=message)

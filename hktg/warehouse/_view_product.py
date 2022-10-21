@@ -12,7 +12,23 @@ from hktg.constants import (
     Action,
     State
 )
-from hktg import db, util, warehouse, strings
+from hktg import db, util, warehouse
+
+
+NEW_PRODUCT_MESSAGE='''🖊️ Введіть всі дані про новий продукт, щоб мати можливість зберегти його:
+
+🔔 Ліміт можна встановити, щоб отримати сповіщення, якщо щось буде закінчуватись
+
+| Символ | Назва | 🔔 Ліміт (кількість та контейнер) | '''
+
+_PRODUCT_MESSAGE='''ℹ️ Ось дані про продукт:
+
+%s
+
+🔔 Ліміт можна встановити, щоб отримати сповіщення, якщо щось буде закінчуватись
+
+| Символ | Назва | Ліміт (кількість та контейнер) | '''
+
 
 @dataclass
 class ViewProduct:
@@ -86,9 +102,9 @@ class ViewProduct:
 
         keyboard = InlineKeyboardMarkup(buttons)
 
-        text = strings.NEW_PRODUCT_MESSAGE
+        text = _NEW_PRODUCT_MESSAGE
         if product_info.id:
-            text = strings.PRODUCT_MESSAGE % (product_info.name or "новий продукт якийсь")
+            text = _PRODUCT_MESSAGE % (product_info.name or "новий продукт якийсь")
 
         if update.callback_query:
             await update.callback_query.edit_message_text(text=text, reply_markup=keyboard)

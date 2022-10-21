@@ -11,7 +11,9 @@ from hktg.constants import (
     Action,
     State
 )
-from hktg import db, util, users, strings, common
+from hktg import db, util, users, common
+
+_USER_MESSAGE = '''Ось така у нас людина є!'''
 
 
 @dataclass
@@ -24,7 +26,6 @@ class ViewUser:
         ViberID = 4,
 
     field_type : FieldType | None = None
-    user_info : int | db.User | None = None
 
     @staticmethod
     async def ask(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
@@ -67,14 +68,15 @@ class ViewUser:
                     ), ViewUser(ViewUser.FieldType.Name, user)
                 )])
         elif user.is_valid():
-            action_buttons.append(util.action_button(Action.CREATE))
+            action_buttons.append(util.action_button(Action.SAVE))
 
 
+        action_buttons.append(util.action_button(Action.CREATE))
         action_buttons.append(util.action_button(Action.BACK))
         buttons.append(action_buttons)
         keyboard = InlineKeyboardMarkup(buttons)
 
-        message = strings.USER_MESSAGE
+        message = _USER_MESSAGE
 
         if update.callback_query:
             await update.callback_query.edit_message_text(text=message, reply_markup=keyboard)
@@ -98,18 +100,21 @@ class ViewUser:
             datadict = user.to_sql()
 
             if query_data == Action.SAVE:
-                db.update_value(
-                    db.Tables.USERS,
-                    datadict,
-                    {'id': user.id}
-                )
+                if user.id:
+                    db.update_value(
+                        db.Tables.USERS,
+                        datadict,
+                        {'id': user.id}
+                    )
+                else:
+                    db.insert_value(db.Tables.USERS, datadict)
+
                 del context.user_data['data']
                 return await users.ViewUsers.ask(update, context)
 
             if query_data == Action.CREATE:
-                db.insert_value(db.Tables.USERS, datadict)
-                del context.user_data['data']
-                return await users.ViewUsers.ask(update, context)
+                context.user_data['data'] = db.Promotion()
+                return users.ViewPromotion.ask(update, context)
 
         if isinstance(query_data, ViewUser):
             context.user_data['data'] = query_data
