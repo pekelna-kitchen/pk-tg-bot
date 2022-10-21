@@ -60,6 +60,8 @@ def insert_value(table_name, data: dict):
     columns = []
     values = []
     for key in data:
+        if not data[key]: continue
+
         columns.append(key)
         value = "'%s'" % data[key] if isinstance(data[key], str) else str(data[key])
         values.append(value)

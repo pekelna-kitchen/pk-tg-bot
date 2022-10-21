@@ -122,23 +122,24 @@ class Entry:
 class Role:
     id: Optional[int] = None
     name: Optional[str] = None
+    symbol: Optional[str] = None
 
 @dataclass
 class User:
     id: Optional[int] = None
     name: Optional[str] = None
     tg_id: Optional[str] = None
-    viber_id: Optional[str] = None
+    vb_id: Optional[str] = None
     phone: Optional[str] = None
 
     def is_valid(self):
-        return self.name and ( self.tg_id or self.viber_id or self.phone )
+        return self.name and ( self.tg_id or self.vb_id or self.phone )
 
     def to_sql(self):
         return {
             "name": self.name,
             "tg_id": self.tg_id,
-            "viber_id": self.viber_id,
+            "vb_id": self.vb_id,
             "phone": self.phone,
         }
 
@@ -147,8 +148,18 @@ class Promotion:
     id: Optional[int] = None
     users_id: Optional[int] = None
     role_id: Optional[int] = None
-    date: Optional[str] = None
-    promoter: Optional[int] = None
+    promoter_id: Optional[int] = None
+    datetime: Optional[str] = None
+
+    def role(self, roles=None) -> Role | None:
+        return _get_by_foreign_key(self.role_id, Tables.ROLES, Role, roles)
+
+    def user(self, users=None) -> User | None:
+        return _get_by_foreign_key(self.users_id, Tables.USERS, User, users)
+
+    def promoter(self, users=None) -> User | None:
+        return _get_by_foreign_key(self.promoter_id, Tables.USERS, User, users)
+
 
 # DRIVER TYPES
 

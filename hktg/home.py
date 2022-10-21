@@ -16,7 +16,8 @@ from hktg import (
     strings,
     driver,
     warehouse,
-    users
+    users,
+    common
 )
 
 
@@ -34,6 +35,8 @@ class Home:
 
         if 'data' in context.user_data:
             del context.user_data['data']
+
+        roles = common.get_user_promotions(update.effective_user.id)
         # users = db.get_table(db.Tables.TG_USERS)
         # admins = db.get_table(db.Tables.TG_ADMINS)
         # locations = db.get_table(db.Tables.LOCATION)
@@ -51,12 +54,19 @@ class Home:
         #     humanize.naturaltime(repo.commit().committed_datetime.replace(tzinfo=None)),
         # )
 
-        buttons = [
-            [ util.action_button(Action.VIEW_MAP), ],
-            [ util.action_button(Action.VIEW_PRODUCTS), ],
-            [ util.action_button(Action.VIEW_USERS), ],
-            [ util.action_button(ConversationHandler.END), ],
-        ]
+        buttons = []
+        driver = [x for x in roles if x.name == 'driver']
+        if driver:
+            buttons.append([ util.action_button(Action.VIEW_MAP), ])
+
+        warehouse = [x for x in roles if x.name == 'warehouse']
+        if warehouse:
+            buttons.append([ util.action_button(Action.VIEW_PRODUCTS), ])
+        admin = [x for x in roles if x.name == 'admin']
+        if admin:
+            buttons.append([ util.action_button(Action.VIEW_USERS), ])
+
+        buttons.append([ util.action_button(ConversationHandler.END) ])
 
         keyboard = InlineKeyboardMarkup(buttons)
         if update.callback_query:

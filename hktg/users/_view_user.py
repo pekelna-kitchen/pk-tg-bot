@@ -46,7 +46,7 @@ class ViewUser:
             util.create_button(user.name, ViewUser(ViewUser.FieldType.Name, user)),
             util.create_button(user.phone, ViewUser(ViewUser.FieldType.Phone, user)),
             util.create_button(user.tg_id, ViewUser(ViewUser.FieldType.TelegramID, user)),
-            util.create_button(user.viber_id, ViewUser(ViewUser.FieldType.ViberID, user)),
+            util.create_button(user.vb_id, ViewUser(ViewUser.FieldType.ViberID, user)),
         ])
         # else:
 
@@ -56,9 +56,16 @@ class ViewUser:
             origin = db.User(*users[0])
             if origin and origin != user:
                 action_buttons.append(util.action_button(Action.SAVE))
-            promotions = db.get_table(db.Tables.PROMOTIONS, {'id': user.id})
+            promotions = db.get_table(db.Tables.PROMOTIONS, {'users_id': user.id})
             for promotion in promotions:
-                util.create_button("%s: %s => %s" % (promotion.name), ViewUser(ViewUser.FieldType.Name, user))
+                p = db.Promotion(*promotion)
+                buttons.append([util.create_button(
+                    "%s: + %s %s" % (
+                        p.promoter().name,
+                        p.role().symbol,
+                        p.role().name,
+                    ), ViewUser(ViewUser.FieldType.Name, user)
+                )])
         elif user.is_valid():
             action_buttons.append(util.action_button(Action.CREATE))
 
@@ -79,7 +86,7 @@ class ViewUser:
     @staticmethod
     async def answer(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
-        # await update.callback_query.answer()
+        await update.callback_query.answer()
 
         query_data = update.callback_query.data
 
@@ -101,9 +108,7 @@ class ViewUser:
 
             if query_data == Action.CREATE:
                 db.insert_value(db.Tables.USERS, datadict)
-                products = db.get_table(db.Tables.PRODUCT, {'id': user.product_id})
-                p = db.Product(*products[0])
-                context.user_data['data'] = p
+                del context.user_data['data']
                 return await users.ViewUsers.ask(update, context)
 
         if isinstance(query_data, ViewUser):
