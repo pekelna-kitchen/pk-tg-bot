@@ -28,7 +28,7 @@ class ViewPromotion:
         Role = 2,
 
     field_type : Optional[FieldType] = None
-    promotion_info : Optional[Union[int | db.Promotion]] = None
+    promotion_info : Optional[Union[int, db.Promotion]] = None
 
     @staticmethod
     async def ask(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
