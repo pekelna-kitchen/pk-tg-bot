@@ -17,4 +17,5 @@ piku_address="piku@localhost:${app_name}"
 echo ${USER} updating piku remote: ${piku_address}
 git remote add piku ${piku_address} || git remote set-url piku ${piku_address}
 
-piku deploy
+git fetch --unshallow
+git push piku --force
