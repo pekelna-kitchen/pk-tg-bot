@@ -1,5 +1,5 @@
 
-from typing import Optional
+from typing import Optional, Union
 
 from telegram import Update
 from telegram.ext import ContextTypes
@@ -28,7 +28,7 @@ class ViewPromotion:
         Role = 2,
 
     field_type : Optional[FieldType] = None
-    promotion_info : Optional[int | db.Promotion] = None
+    promotion_info : Optional[Union[int | db.Promotion]] = None
 
     @staticmethod
     async def ask(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:

@@ -1,5 +1,5 @@
 
-from typing import Optional
+from typing import Optional, Union
 
 from telegram import Update
 from telegram.ext import ContextTypes
@@ -28,7 +28,7 @@ class ViewUser:
         ViberID = 4,
 
     field_type : Optional[FieldType] = None
-    user_info : Optional[int | db.User] = None
+    user_info : Optional[Union[int | db.User]] = None
 
     @staticmethod
     async def ask(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
