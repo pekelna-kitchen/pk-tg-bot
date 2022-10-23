@@ -3,7 +3,6 @@
 
 import logging
 import os
-from hktg import handler
 
 from telegram import __version__ as TG_VER
 
@@ -33,19 +32,19 @@ PORT = int(os.environ.get('PORT', '8443'))
 
 # Enable logging
 logging.basicConfig(
-    # format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO
 )
-logger = logging.getLogger(__name__)
-
 
 def main() -> None:
-    application = Application.builder().token(
-        TG_TOKEN).arbitrary_callback_data(True).build()
+
+    from hktg import handler, home
+
+    application = Application.builder().token(TG_TOKEN).arbitrary_callback_data(True).build()
 
     application.add_handler(handler.get())
+    application.add_error_handler(home.Home.error_handler)
 
-    # Run the bot until the user presses Ctrl-C
     application.run_polling()
 
 

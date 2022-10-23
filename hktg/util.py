@@ -1,15 +1,27 @@
 
+import json
+
 from telegram import (
     InlineKeyboardButton,
     Update
 )
 from telegram.ext import ContextTypes
 
-from .constants import (
-    UserData,
-    UserDataKey,
-    Action,
-)
+from .constants import Action
+
+class EnhancedJSONEncoder(json.JSONEncoder):
+    def default(self, o):
+
+        import dataclasses
+        from enum import Enum
+
+        if dataclasses.is_dataclass(o):
+            return dataclasses.asdict(o)
+
+        if isinstance(o, Enum):
+            return o.name
+
+        return super().default(o)
 
 def split_list(source: list, count: int):
     result = []
@@ -17,31 +29,24 @@ def split_list(source: list, count: int):
         result.append(source[i:i+count])
     return result
 
-def reset_data(context: ContextTypes.DEFAULT_TYPE):
-    if 'data' in context.user_data:
-        del context.user_data['data']
-    context.user_data['data'] = UserData()
 
-def user_data(context: ContextTypes.DEFAULT_TYPE):
-    if 'data' not in context.user_data:
-        reset_data(context)
-
-    return UserData(context.user_data['data'])
-
-
-def action_button(action: Action, callback_data={}):
+def action_button(action: Action):
 
     from telegram import InlineKeyboardButton
- 
-    callback_data = UserData(action=action).with_dict(callback_data)
-    return InlineKeyboardButton(text=Action.description(action), callback_data=callback_data)
+
+    return InlineKeyboardButton(text=Action.description(action), callback_data=action)
 
 
-def find_in_table(table_name, index, comparable):
+# 
 
-    from hktg.dbwrapper import get_table
+def create_button(text, callback_data):
 
-    table = get_table(table_name)
-    return next((x for x in table if x[index] == comparable), None)
- 
-# Action.MODIFY: lambda u, c: update_mapping[query_data[UserDataKey.ACTION]](u, c)
+    from hktg import db
+    from telegram import InlineKeyboardButton
+
+    if not text:
+        text = "➕"
+    types = (db.Location, db.Container, db.Product)
+    if isinstance(text, types):
+        text = text.desc()
+    return InlineKeyboardButton(text, callback_data=callback_data)

@@ -1,6 +1,12 @@
 
 psycopg2-binary
+yoyo-migrations
+
 humanize
+folium
+geopy
+html2image
 
 python-telegram-bot>=20.0a0
-gitpython
+
+autopep8

@@ -35,3 +35,10 @@ sudo apt-get install postgresql
 piku config:set TG_TOKEN=
 piku config:set DATABASE_URL=
 ```
+
+
+### init db
+
+```bash
+yoyo apply --database <DB_URL> ./migrations
+```
