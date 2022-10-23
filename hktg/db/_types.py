@@ -178,13 +178,13 @@ class Promotion:
             "datetime": self.datetime,
         }
 
-    def role(self, roles=None) -> Role | None:
+    def role(self, roles=None):
         return _get_by_foreign_key(self.role_id, Tables.ROLES, Role, roles)
 
-    def user(self, users=None) -> User | None:
+    def user(self, users=None):
         return _get_by_foreign_key(self.users_id, Tables.USERS, User, users)
 
-    def promoter(self, users=None) -> User | None:
+    def promoter(self, users=None):
         return _get_by_foreign_key(self.promoter_id, Tables.USERS, User, users)
 
 
