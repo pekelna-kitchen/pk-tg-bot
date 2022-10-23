@@ -16,6 +16,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: deploy
+      - name: piku-deploy
         working-directory: ${{ github.workspace }}
         run: piku/deploy.sh ${{ env.PIKU_APP_NAME }}
