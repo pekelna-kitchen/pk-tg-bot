@@ -1,9 +1,12 @@
 
 name: piku
-on: [ push, workflow_dispatch ]
+on: 
+  push:
+    branches:
+      - master
+  workflow_dispatch:
 
 env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   PIKU_APP_NAME: hktg
 
 jobs:
