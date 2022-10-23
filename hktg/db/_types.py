@@ -126,7 +126,7 @@ class Entry:
     def container(self, containers = None):
         return _get_by_foreign_key(self.container_id, Tables.CONTAINER, Container, containers)
 
-    def product(self, products = None) -> Product | None:
+    def product(self, products = None):
         return _get_by_foreign_key(self.product_id, Tables.PRODUCT, Product, products)
 
     def location(self, locations = None):
