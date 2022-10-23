@@ -21,3 +21,17 @@ curl https://raw.githubusercontent.com/piku/piku/master/piku > /usr/bin/piku && 
 ### add self-hosted runner
 
 Open [runners page](https://github.com/pekelna-kitchen/telegram-bot/settings/actions/runners) to get API key and instructions.
+
+
+### install project dependencies
+
+```bash
+sudo apt-get install postgresql
+```
+
+### after piku app init, configure env variables
+
+```bash
+piku config:set TG_TOKEN=
+piku config:set DATABASE_URL=
+```
