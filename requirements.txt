@@ -3,7 +3,6 @@ psycopg2-binary
 yoyo-migrations
 
 humanize
-gitpython
 folium
 geopy
 html2image

@@ -18,6 +18,22 @@ class Tables:
     COORDS = 'coords'
     CIVILS = 'civils'
 
+    @staticmethod
+    def from_type(element_type) -> str:
+        str_dict = {
+            Location: Tables.LOCATION,
+            Entry: Tables.ENTRIES,
+            Product: Tables.PRODUCT,
+            Container: Tables.CONTAINER,
+            Role: Tables.ROLES,
+            User: Tables.USERS,
+            Promotion: Tables.PROMOTIONS,
+            District: Tables.DISTRICTS,
+            Coord: Tables.COORDS,
+            Civil: Tables.CIVILS,
+        }
+        return str_dict[element_type]
+
 # WAREHOUSE TYPES
 
 @dataclass()
@@ -151,6 +167,17 @@ class Promotion:
     promoter_id: Optional[int] = None
     datetime: Optional[str] = None
 
+    def is_valid(self):
+        return self.users_id and self.role_id
+
+    def to_sql(self):
+        return {
+            "users_id": self.users_id,
+            "role_id": self.role_id,
+            "promoter_id": self.promoter_id,
+            "datetime": self.datetime,
+        }
+
     def role(self, roles=None) -> Role | None:
         return _get_by_foreign_key(self.role_id, Tables.ROLES, Role, roles)
 
@@ -191,23 +218,21 @@ class Civil:
 
 # utilities
 
-def _find_tuple_element(tuples, comparables: dict):
-    def check_tuple_elem(t):
-        for key in comparables:
-            if t[key] != comparables[key]:
-                return False
-        return True
+# def _find_tuple_element(tuples, comparables: dict):
+#     def check_tuple_elem(t):
+#         for key in comparables:
+#             if t[key] != comparables[key]:
+#                 return False
+#         return True
 
-    return next((x for x in tuples if check_tuple_elem(x)), None)
+#     return next((x for x in tuples if check_tuple_elem(x)), None)
 
 def _get_by_foreign_key(fkey, table_name, type_of, collection, key = 'id' ):
     if not fkey:
         return None
 
-    if collection:
-        c = _find_tuple_element(collection, {0: fkey})
-        return type_of(*c)
+    if not collection:
+        from ._postgresql import get_table
+        collection = get_table(type_of, {key: fkey})
 
-    from ._postgresql import get_table
-    tuples_list = get_table(table_name, {key: fkey})
-    return type_of(*tuples_list[0])
+    return next(collection, None)

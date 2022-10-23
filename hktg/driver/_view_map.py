@@ -39,7 +39,7 @@ class ViewMap:
             png_enabled=True
         )
 
-        civils = db.get_table(db.Tables.CIVILS)
+        civils = db.get_table(db.Civil)
         locations = []
         for c in civils:
             civil = db.Civil(*c)

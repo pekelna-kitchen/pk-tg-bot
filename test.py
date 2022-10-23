@@ -21,10 +21,9 @@ if __name__ == '__main__':
         png_enabled=True
     )
 
-    civils = db.get_table(db.Tables.CIVILS)
+    civils = db.get_table(db.Civil)
     locations = []
-    for c in civils:
-        civil = db.Civil(*c)
+    for civil in civils:
         coords = civil.coords()
         if coords:
             locations.append((float(coords.latitude), float(coords.longitude)))

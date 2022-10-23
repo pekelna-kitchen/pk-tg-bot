@@ -2,6 +2,7 @@
 import os
 import logging
 import psycopg2
+from typing import List
 
 from ._types import Tables
 
@@ -37,11 +38,11 @@ def _query(q: str):
 # simple queries
 
 
-def get_table(name, where:dict={}):
+def get_table(element_type, where:dict={}) -> List:
     where_str = "WHERE %s" % _join_dict(where, ' AND ') if where else ""
 
-    cur = _query("SELECT * FROM %s %s;" % (name, where_str))
-    return cur.fetchall()
+    cur = _query("SELECT * FROM %s %s;" % (Tables.from_type(element_type), where_str))
+    return map(lambda x: element_type(*x), cur.fetchall())
 
 
 def update_value(table_name, data: dict, criteria: dict):

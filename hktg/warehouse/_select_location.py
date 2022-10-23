@@ -16,17 +16,11 @@ class SelectLocation:
 
         from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-        locations = db.get_table(db.Tables.LOCATION)
+        locations = db.get_table(db.Location)
 
         buttons = []
         for id, symbol, name in locations:
             buttons.append(InlineKeyboardButton(text="%s %s" % (symbol, name), callback_data=id))
-
-        # users = db.get_table(db.Tables.TG_USERS)
-        # is_user = db.find_in_table(users, 1, str(update.effective_user.id))
-
-        # if is_user:
-        #     buttons.append(util.action_button(Action.CREATE))
 
         buttons = util.split_list(buttons, 2)
 

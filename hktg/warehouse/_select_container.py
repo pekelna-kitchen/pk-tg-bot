@@ -14,12 +14,12 @@ class SelectContainer:
     
         from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-        containers = db.get_table(db.Tables.CONTAINER)
+        containers = db.get_table(db.Container)
         buttons = []
-        for container_id, containers_symbol, containers_desc in containers:
-            buttons.append(
-                InlineKeyboardButton(text="%s %s" % (
-                    containers_symbol, containers_desc), callback_data=container_id),
+        for container in containers:
+            buttons.append(InlineKeyboardButton(
+                text="%s %s" % (container.symbol, container.desc),
+                callback_data=container.id),
             )
 
         buttons = util.split_list(buttons, 2)

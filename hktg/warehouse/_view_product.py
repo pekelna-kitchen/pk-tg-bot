@@ -4,7 +4,6 @@ from telegram.ext import ContextTypes, ConversationHandler
 
 from enum import Enum
 
-import humanize
 from datetime import datetime
 from dataclasses import dataclass
 
@@ -50,9 +49,7 @@ class ViewProduct:
         # db entry or None
         origin = None
         if product_info.id:
-            products = db.get_table(db.Tables.PRODUCT, {'id': product_info.id})
-            if products:
-                origin = db.Product(*products[0])
+            origin = next(db.get_table(db.Product, {'id': product_info.id}), None)
 
             if not product_info.is_valid() and origin:
                 product_info = origin
@@ -72,16 +69,15 @@ class ViewProduct:
             util.create_button(product_info.container(), ViewProduct(ViewProduct.FieldType.LimitContainerID)),
         ])
         
-        containers = db.get_table(db.Tables.CONTAINER)
-        locations = db.get_table(db.Tables.LOCATION)
+        containers = db.get_table(db.Container)
+        locations = db.get_table(db.Location)
 
         action_buttons = []
         if product_info.id:
-            entries = db.get_table(db.Tables.ENTRIES, {
+            entries = db.get_table(db.Entry, {
                 'product_id': product_info.id
             })
-            for entry in entries:
-                e = db.Entry(*entry)
+            for e in entries:
                 text = "%s %s (%s)" % (
                     e.amount,
                     e.container(containers).desc(),

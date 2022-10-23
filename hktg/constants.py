@@ -21,7 +21,7 @@ class State(Enum):
     VIEWING_USERS = 13
     VIEWING_MAP = 14
     VIEWING_USER = 15
-    VIEWING_PROMOTIONS = 16
+    VIEWING_PROMOTION = 16
 
 
 class Action(Enum):

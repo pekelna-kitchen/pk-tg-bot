@@ -10,7 +10,9 @@ from hktg.constants import (
 )
 from hktg import db, util, home, users
 
-_USERS_TEXT = "✔️ Ось хто в нас є:"
+_USERS_TEXT = '''✔️ Інформація про волонтерів.
+
+'''
 
 class ViewUsers:
     @staticmethod
@@ -22,19 +24,20 @@ class ViewUsers:
 
         buttons = []
 
-        users = db.get_table(db.Tables.USERS)
-        roles = db.get_table(db.Tables.ROLES)
-        promotions = db.get_table(db.Tables.PROMOTIONS)
+        users = db.get_table(db.User)
+        roles = db.get_table(db.Role)
+        promotions = db.get_table(db.Promotion)
 
-        for u in users:
-            user = db.User(*u)
+        for user in users:
+            
             user_str = user.name
             for svc_name, svc_id in (("TG", user.tg_id), ("Viber", user.vb_id)):
                 if svc_id:
                     user_str += " [%s: %s]" % (svc_name, svc_id)
-            buttons.append([InlineKeyboardButton(user_str, callback_data=user)])
+            buttons.append(InlineKeyboardButton(user_str, callback_data=user))
 
-        # buttons = util.split_list(buttons, 2)
+        buttons = util.split_list(buttons, 2)
+
         buttons.append([
             util.action_button(Action.CREATE),
             util.action_button(Action.HOME)])

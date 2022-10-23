@@ -14,7 +14,7 @@ class SelectProduct:
 
         from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-        products = db.get_table(db.Tables.PRODUCT)
+        products = db.get_table(db.Product)
 
         buttons = []
         for product_id, product_sym, product_name, _, _ in products:
@@ -23,7 +23,7 @@ class SelectProduct:
                 callback_data=product_id)
             )
 
-        # users = db.get_table(db.Tables.TG_USERS)
+        # users = db.get_table(db.User)
         # is_user = db.find_in_table(users, 1, str(update.effective_user.id))
 
         # if is_user:

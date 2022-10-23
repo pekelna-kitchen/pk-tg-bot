@@ -22,5 +22,5 @@ from ._postgresql import (
     get_table,
     insert_value,
     update_value,
-    # delete_value,
+    delete_value,
 )

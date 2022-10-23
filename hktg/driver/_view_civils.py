@@ -15,13 +15,7 @@ from hktg import db, util, warehouse, home
 
 
 @dataclass
-class ViewEntry:
-
-    class FieldType(Enum):
-        Product = 1,
-        Location = 2,
-        Amount = 3,
-        Container = 4,
+class ViewCivils:
 
     field_type : FieldType | None = None
 
@@ -33,10 +27,11 @@ class ViewEntry:
         # query_data = update.callback_query.data
 
         buttons = []
-        buttons.append([ util.action_button(Action.CREATE) ])
 
+        civils = db.get_table(db.Civil)
 
         buttons.append([
+            util.action_button(Action.CREATE),
             util.action_button(Action.BACK),
         ])
         keyboard = InlineKeyboardMarkup(buttons)

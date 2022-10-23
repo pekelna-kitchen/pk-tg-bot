@@ -24,6 +24,7 @@ def get_handler():
         states={
             State.VIEWING_USERS: [CallbackQueryHandler(ViewUsers.answer)],
             State.VIEWING_USER: [CallbackQueryHandler(ViewUser.answer)],
+            State.VIEWING_PROMOTION: [CallbackQueryHandler(ViewPromotion.answer)],
             State.ENTERING_TEXT: [MessageHandler(filters.TEXT & ~filters.COMMAND, common.AskText.answer)],
         },
         fallbacks=[

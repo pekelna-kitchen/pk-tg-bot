@@ -22,24 +22,22 @@ class ViewProducts:
 
         buttons = []
 
-        products = db.get_table(db.Tables.PRODUCT)
-        locations = db.get_table(db.Tables.LOCATION)
-        containers = db.get_table(db.Tables.CONTAINER)
+        products = db.get_table(db.Product)
+        locations = db.get_table(db.Location)
+        containers = db.get_table(db.Container)
 
         for p in products:
-            prod = db.Product(*p)
-            entries = db.get_table(db.Tables.ENTRIES, {'product_id': prod.id})
+            entries = db.get_table(db.Entry, {'product_id': p.id})
             e_desc = ''
-            for entry in entries:
-                e = db.Entry(*entry)
-                e_desc += '[ %s %s ]' % (e.amount, e.container(containers).symbol)
-                # entries_desc = ' '.join([prod.symbol, prod.name, e_desc])
+            for e in entries:
+                e_desc += ' '.join([e_desc, '[%s%s]' % (e.amount, e.container(containers).symbol)])
+                # entries_desc = ' '.join([p.symbol, p.name, e_desc])
 
             buttons.append(
                 InlineKeyboardButton(
                     # TODO: message wityh desc
-                    text=" ".join([prod.symbol, prod.name, e_desc]),
-                    callback_data=prod
+                    text=" ".join([p.symbol, p.name, e_desc]),
+                    callback_data=p
                 ),
             )
 

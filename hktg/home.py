@@ -12,6 +12,7 @@ from hktg.constants import (
     State
 )
 from hktg import (
+    db,
     util,
     driver,
     warehouse,
@@ -27,11 +28,6 @@ _COMEBACK_TEXT = '''😔 Ну ти, цей... повертайся ще.
 
 PS Для цього використай /start'''
 
-_SHOWING_TEXT = '''🏠 Ласкаво прошу до 🌶️Пекельної 🧑‍🍳Кухні!
-
-😏 Що бажаємо?'''
-
-
 
 class Home:
     @staticmethod
@@ -45,36 +41,27 @@ class Home:
         if 'data' in context.user_data:
             del context.user_data['data']
 
-        roles = common.get_user_promotions(update.effective_user.id)
-        # users = db.get_table(db.Tables.TG_USERS)
-        # admins = db.get_table(db.Tables.TG_ADMINS)
-        # locations = db.get_table(db.Tables.LOCATION)
-
-        # is_user = db.find_in_table(db.Tables.TG_USERS, 1, str(update.effective_user.id))
-        # is_admin = is_user and db.find_in_table(db.Tables.TG_ADMINS, 1, is_user[0])
-
-        # import git
-        # repo = git.Repo(search_parent_directories=True)
+        users = db.get_table(db.User)
+        roles = db.get_table(db.Role)
 
         # import humanize
-        text = _SHOWING_TEXT # + "\n\nVersion: %s:%s\n%s" % (
-        #     repo.active_branch.name,
-        #     repo.head.commit.summary,
-        #     humanize.naturaltime(repo.commit().committed_datetime.replace(tzinfo=None)),
-        # )
+        text = f"""🏠 Ласкаво прошу до 🌶️Пекельної 🧑‍🍳Кухні! 
+
+        ID: <code>{update.effective_chat.id}</code>.
+
+        😏 Що бажаємо?"""
 
         buttons = []
-        admin = [x for x in roles if x.name == 'admin']
 
-        driver = [x for x in roles if x.name == 'driver']
-        if driver or admin:
+        is_admin = common.tg_has_role(update.effective_user.id, 'admin', users, roles)
+
+        if is_admin or common.tg_has_role(update.effective_user.id, 'driver', users, roles):
             buttons.append([ util.action_button(Action.VIEW_MAP), ])
 
-        warehouse = [x for x in roles if x.name == 'warehouse']
-        if warehouse or admin:
+        if is_admin or common.tg_has_role(update.effective_user.id, 'warehouse', users, roles):
             buttons.append([ util.action_button(Action.VIEW_PRODUCTS), ])
 
-        if admin:
+        if is_admin:
             buttons.append([ util.action_button(Action.VIEW_USERS), ])
 
         buttons.append([ util.action_button(ConversationHandler.END) ])
@@ -83,7 +70,7 @@ class Home:
         if update.callback_query:
             await update.callback_query.edit_message_text(text=text, reply_markup=keyboard)
         else:
-            await update.message.reply_text(text=text, quote=True, reply_markup=keyboard)
+            await update.message.reply_html(text=text, reply_markup=keyboard)
 
         return State.CHOOSING_ACTION
 

@@ -56,8 +56,7 @@ class ViewEntry:
 
         action_buttons = []
         if entry.id:
-            entries = db.get_table(db.Tables.ENTRIES, {'id': entry.id})
-            origin = db.Entry(*entries[0])
+            origin = next(db.get_table(db.Entry, {'id': entry.id}), None)
             if origin and origin != entry:
                 action_buttons.append(util.action_button(Action.SAVE))
         elif entry.is_valid():
@@ -91,9 +90,7 @@ class ViewEntry:
         if isinstance(query_data, Action):
             entry : db.Entry = context.user_data['data']
             if query_data == Action.BACK:
-                products = db.get_table(db.Tables.PRODUCT, {'id': entry.product_id})
-                p = db.Product(*products[0])
-                context.user_data['data'] = p
+                context.user_data['data'] = next(db.get_table(db.Product, {'id': entry.product_id}), None)
                 return await warehouse.ViewProduct.ask(update, context)
 
             entry.editor = update.effective_user.name
@@ -110,16 +107,12 @@ class ViewEntry:
                     datadict,
                     {'id': entry_id}
                 )
-                products = db.get_table(db.Tables.PRODUCT, {'id': entry.product_id})
-                p = db.Product(*products[0])
-                context.user_data['data'] = p
+                context.user_data['data'] = next(db.get_table(db.Product, {'id': entry.product_id}), None)
                 return await warehouse.ViewProduct.ask(update, context)
 
             if query_data == Action.CREATE:
                 db.insert_value(db.Tables.ENTRIES, datadict)
-                products = db.get_table(db.Tables.PRODUCT, {'id': entry.product_id})
-                p = db.Product(*products[0])
-                context.user_data['data'] = p
+                context.user_data['data'] = next(db.get_table(db.Product, {'id': entry.product_id}), None)
                 return await warehouse.ViewProduct.ask(update, context)
 
             # context.user_data['data'] = db.Product(entry_data.product_id)

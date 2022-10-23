@@ -3,7 +3,6 @@ from telegram import Update
 from telegram.ext import ContextTypes
 from dataclasses import dataclass
 
-import humanize
 from enum import Enum
 from datetime import datetime
 
@@ -13,7 +12,8 @@ from hktg.constants import (
 )
 from hktg import db, util, users, common
 
-_USER_MESSAGE = '''Ось така у нас людина є!'''
+_USER_MESSAGE = '''👤 Ось така у нас людина є!'''
+_NEW_USER_MESSAGE = '''🧐 А хто це новенький в нас тут?'''
 
 
 @dataclass
@@ -26,6 +26,7 @@ class ViewUser:
         ViberID = 4,
 
     field_type : FieldType | None = None
+    user_info : int | db.User | None = None
 
     @staticmethod
     async def ask(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
@@ -53,23 +54,20 @@ class ViewUser:
 
         action_buttons = []
         if user.id:
-            users = db.get_table(db.Tables.USERS, {'id': user.id})
-            origin = db.User(*users[0])
+            origin = next(db.get_table(db.User, {'id': user.id}), None)
             if origin and origin != user:
                 action_buttons.append(util.action_button(Action.SAVE))
-            promotions = db.get_table(db.Tables.PROMOTIONS, {'users_id': user.id})
-            for promotion in promotions:
-                p = db.Promotion(*promotion)
+            promotions = db.get_table(db.Promotion, {'users_id': user.id})
+            for p in promotions:
                 buttons.append([util.create_button(
                     "%s: + %s %s" % (
                         p.promoter().name,
                         p.role().symbol,
                         p.role().name,
-                    ), ViewUser(ViewUser.FieldType.Name, user)
+                    ), p
                 )])
         elif user.is_valid():
             action_buttons.append(util.action_button(Action.SAVE))
-
 
         action_buttons.append(util.action_button(Action.CREATE))
         action_buttons.append(util.action_button(Action.BACK))
@@ -126,3 +124,8 @@ class ViewUser:
                 return await common.AskText.ask(update, context)
             if query_data.field_type == ViewUser.FieldType.ViberID:
                 return await common.AskText.ask(update, context)
+
+        if isinstance(query_data, db.Promotion):
+            context.user_data['data'] = query_data
+            return await users.ViewPromotion.ask(update, context)
+

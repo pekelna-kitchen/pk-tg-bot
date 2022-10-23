@@ -13,79 +13,67 @@ from hktg.constants import (
 )
 from hktg import db, util, users, common
 
-_PROMOTION_MESSAGE = '''Ось така у нас людина є!'''
+_PROMOTION_MESSAGE = '''Дані про запис:
+
+%s
+Коли: %s'''
 
 @dataclass
 class ViewPromotion:
 
     class FieldType(Enum):
         Name = 1,
-        Phone = 2,
-        TelegramID = 3,
-        ViberID = 4,
+        Role = 2,
 
     field_type : FieldType | None = None
     promotion_info : int | db.Promotion | None = None
-
-    db.Promotion()
 
     @staticmethod
     async def ask(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
 
         from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-        user : db.User = None
-        if isinstance(context.user_data['data'], db.User):
-            user = context.user_data['data']
+        promotion : db.Promotion = None
+        if isinstance(context.user_data['data'], db.Promotion):
+            promotion = context.user_data['data']
 
         buttons = []
-        buttons.append([
-            util.create_button("Ім'я", callback_data=user),
-            util.create_button("Телефон", callback_data=user),
-            util.create_button("TG", callback_data=user),
-            util.create_button("Viber", callback_data=user),
-        ])
-        buttons.append([
-            util.create_button(user.name, ViewUser(ViewUser.FieldType.Name, user)),
-            util.create_button(user.phone, ViewUser(ViewUser.FieldType.Phone, user)),
-            util.create_button(user.tg_id, ViewUser(ViewUser.FieldType.TelegramID, user)),
-            util.create_button(user.vb_id, ViewUser(ViewUser.FieldType.ViberID, user)),
-        ])
-        # else:
+        message = _PROMOTION_MESSAGE % ("новий запис", "-")
 
         action_buttons = []
-        if user.id:
-            users = db.get_table(db.Tables.USERS, {'id': user.id})
-            origin = db.User(*users[0])
-            if origin and origin != user:
+        if promotion.id:
+            message = "%s: %s => %s %s" % (
+                promotion.promoter().name,
+                promotion.user().name,
+                promotion.role().symbol,
+                promotion.role().name,
+            )
+            message = _PROMOTION_MESSAGE % (message, humanize.naturaltime(promotion.datetime))
+
+            if common.tg_has_role(update.effective_user.id, 'admin'):
+                action_buttons.append(util.action_button(Action.DELETE))
+        else:
+            buttons.append([
+                util.create_button("Волонтер", callback_data=promotion),
+                util.create_button("Роль", callback_data=promotion),
+            ])
+            buttons.append([
+                util.create_button(promotion.name, ViewPromotion(ViewPromotion.FieldType.Name, promotion)),
+                util.create_button(promotion.role(), ViewPromotion(ViewPromotion.FieldType.Role, promotion)),
+            ])
+            if promotion.is_valid():
                 action_buttons.append(util.action_button(Action.SAVE))
-            promotions = db.get_table(db.Tables.PROMOTIONS, {'users_id': user.id})
-            for promotion in promotions:
-                p = db.Promotion(*promotion)
-                buttons.append([util.create_button(
-                    "%s: + %s %s" % (
-                        p.promoter().name,
-                        p.role().symbol,
-                        p.role().name,
-                    ), ViewUser(ViewUser.FieldType.Name, user)
-                )])
-        elif user.is_valid():
-            action_buttons.append(util.action_button(Action.SAVE))
 
-
-        action_buttons.append(util.action_button(Action.CREATE))
         action_buttons.append(util.action_button(Action.BACK))
         buttons.append(action_buttons)
         keyboard = InlineKeyboardMarkup(buttons)
-
-        message = _USER_MESSAGE
 
         if update.callback_query:
             await update.callback_query.edit_message_text(text=message, reply_markup=keyboard)
         else:
             await update.message.reply_text(text=message, reply_markup=keyboard)
 
-        return State.VIEWING_USER
+        return State.VIEWING_PROMOTION
 
     @staticmethod
     async def answer(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -95,36 +83,18 @@ class ViewPromotion:
         query_data = update.callback_query.data
 
         if isinstance(query_data, Action):
-            user : db.User = context.user_data['data']
+            promotion : db.Promotion = context.user_data['data']
             if query_data == Action.BACK:
-                return await users.ViewUsers.ask(update, context)
+                context.user_data['data'] = promotion.user()
+                return await users.ViewUser.ask(update, context)
 
-            datadict = user.to_sql()
+            datadict = promotion.to_sql()
 
-            if query_data == Action.SAVE:
-                if user.id:
-                    db.update_value(
-                        db.Tables.USERS,
-                        datadict,
-                        {'id': user.id}
-                    )
-                else:
-                    db.insert_value(db.Tables.USERS, datadict)
+            if query_data == Action.DELETE:
+                db.delete_value(
+                    db.Tables.PROMOTIONS,
+                    {'id': promotion.id}
+                )
 
                 del context.user_data['data']
-                return await users.ViewUsers.ask(update, context)
-
-            if query_data == Action.CREATE:
-                context.user_data['data'] = db.Promotion()
-                return users.ViewPromotion.ask(update, context)
-
-        if isinstance(query_data, ViewUser):
-            context.user_data['data'] = query_data
-            if query_data.field_type == ViewUser.FieldType.Name:
-                return await common.AskText.ask(update, context)
-            if query_data.field_type == ViewUser.FieldType.Phone:
-                return await common.AskText.ask(update, context)
-            if query_data.field_type == ViewUser.FieldType.TelegramID:
-                return await common.AskText.ask(update, context)
-            if query_data.field_type == ViewUser.FieldType.ViberID:
-                return await common.AskText.ask(update, context)
+                return await users.ViewUser.ask(update, context)
