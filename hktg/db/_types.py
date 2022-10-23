@@ -235,4 +235,4 @@ def _get_by_foreign_key(fkey, table_name, type_of, collection, key = 'id' ):
         from ._postgresql import get_table
         collection = get_table(type_of, {key: fkey})
 
-    return next(collection, None)
+    return next(filter(lambda x: x[key] == fkey, collection), None)
