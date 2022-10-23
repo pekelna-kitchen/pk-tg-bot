@@ -1,4 +1,6 @@
 
+from typing import Optional
+
 from telegram import Update
 from telegram.ext import ContextTypes
 from dataclasses import dataclass
@@ -17,7 +19,7 @@ from hktg import db, util, warehouse, home
 @dataclass
 class ViewCivils:
 
-    field_type : FieldType | None = None
+    field_type : Optional[FieldType] = None
 
     @staticmethod
     async def ask(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:

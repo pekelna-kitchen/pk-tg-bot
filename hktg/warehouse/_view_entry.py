@@ -1,4 +1,6 @@
 
+from typing import Optional
+
 from telegram import Update
 from telegram.ext import ContextTypes
 from dataclasses import dataclass
@@ -26,7 +28,7 @@ class ViewEntry:
         Amount = 3,
         Container = 4,
 
-    field_type : FieldType | None = None
+    field_type : Optional[FieldType] = None
 
     @staticmethod
     async def ask(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
